@@ -347,6 +347,41 @@ class SyncJpdrpData extends Command
             return;
         }
 
+        // Deduplicate batch based on key columns (PostgreSQL requirement)
+        // PostgreSQL's ON CONFLICT cannot handle duplicate keys within the same INSERT statement
+        $deduplicatedBatch = [];
+        $keyMap = []; // Map key string to index in deduplicatedBatch
+        $duplicateCount = 0;
+
+        foreach ($batch as $data) {
+            // Build key string from key columns
+            $keyParts = [];
+            foreach ($keyColumns as $keyCol) {
+                $keyParts[] = $data[$keyCol] ?? '';
+            }
+            $keyString = implode('|', $keyParts);
+
+            if (isset($keyMap[$keyString])) {
+                // Duplicate found - replace with new data (keep last occurrence)
+                $duplicateCount++;
+                $deduplicatedBatch[$keyMap[$keyString]] = $data;
+            } else {
+                // New key - add to batch
+                $keyMap[$keyString] = count($deduplicatedBatch);
+                $deduplicatedBatch[] = $data;
+            }
+        }
+
+        if ($duplicateCount > 0) {
+            $this->warn("    Found {$duplicateCount} duplicate key(s) in batch, keeping last occurrence");
+        }
+
+        $batch = $deduplicatedBatch;
+
+        if (empty($batch)) {
+            return;
+        }
+
         try {
             DB::beginTransaction();
 
@@ -394,6 +429,32 @@ class SyncJpdrpData extends Command
                 $updateClause = implode(', ', $updateClauses);
 
                 $sql .= " ON CONFLICT ({$keyColumnsStr}) DO UPDATE SET {$updateClause}";
+
+                // PostgreSQL: Use RETURNING with xmax to track INSERT vs UPDATE
+                // xmax = 0 means INSERT (new row), xmax != 0 means UPDATE (existing row was updated)
+                // Note: xmax is a system column that tracks transaction ID
+                $sql .= " RETURNING (xmax = 0) AS inserted";
+
+                $results = DB::select($sql, $allValues);
+
+                // Count inserts and updates separately
+                $insertCount = 0;
+                $updateCount = 0;
+                foreach ($results as $result) {
+                    // PostgreSQL returns boolean as 't'/'f' or true/false depending on driver
+                    $isInserted = is_bool($result->inserted)
+                        ? $result->inserted
+                        : ($result->inserted === 't' || $result->inserted === true || $result->inserted === 1);
+
+                    if ($isInserted) {
+                        $insertCount++;
+                    } else {
+                        $updateCount++;
+                    }
+                }
+
+                $this->stats['rows_inserted'] += $insertCount;
+                $this->stats['rows_updated'] += $updateCount;
             } elseif ($driver !== 'pgsql' && !empty($updateColumns)) {
                 // MySQL/MariaDB syntax
                 $updateClauses = [];
@@ -403,14 +464,17 @@ class SyncJpdrpData extends Command
                 }
                 $updateClause = implode(', ', $updateClauses);
                 $sql .= " ON DUPLICATE KEY UPDATE {$updateClause}";
+
+                DB::statement($sql, $allValues);
+
+                // MySQL doesn't distinguish between inserts and updates in affected rows
+                // So we approximate: count all as processed (both insert and update)
+                $this->stats['rows_inserted'] += count($batch);
+            } else {
+                // No update columns (shouldn't happen, but handle gracefully)
+                DB::statement($sql, $allValues);
+                $this->stats['rows_inserted'] += count($batch);
             }
-
-            DB::statement($sql, $allValues);
-
-            // Note: MySQL doesn't distinguish between inserts and updates in affected rows
-            // So we approximate: count all as processed (both insert and update)
-            // For accurate stats, we'd need to check exists before, but that's slower
-            $this->stats['rows_inserted'] += count($batch);
 
             DB::commit();
 
