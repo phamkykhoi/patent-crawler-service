@@ -25,9 +25,6 @@ return new class extends Migration
             $table->integer('atty_typ')->nullable();
             $table->string('atty_name_len')->nullable();
             $table->string('atty_name')->nullable();
-            
-            $table->unique(['law_cd', 'reg_num', 'pe_num']);
-            $table->index('reg_num', 'idx_reg_num');
         });
     }
 
