@@ -23,7 +23,7 @@ return new class extends Migration
             $table->string('mrgn_ext_app_num')->nullable();
             
             $table->unique(['law_cd', 'reg_num']);
-            $table->index('reg_num', 'idx_reg_num');
+            $table->index('reg_num', 'idx_upd_mrgn_ext_app_num_p_reg_num');
         });
     }
 

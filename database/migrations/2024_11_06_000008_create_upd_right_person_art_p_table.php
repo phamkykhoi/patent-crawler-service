@@ -28,7 +28,7 @@ return new class extends Migration
             $table->string('right_person_name')->nullable();
 
             $table->unique(['law_cd', 'reg_num', 'pe_num']);
-            $table->index('reg_num', 'idx_reg_num');
+            $table->index('reg_num', 'idx_upd_right_person_art_p_reg_num');
         });
     }
 

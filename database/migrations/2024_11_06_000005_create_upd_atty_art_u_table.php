@@ -27,7 +27,7 @@ return new class extends Migration
             $table->string('atty_name')->nullable();
             
             $table->unique(['law_cd', 'reg_num', 'pe_num']);
-            $table->index('reg_num', 'idx_reg_num');
+            $table->index('reg_num', 'idx_upd_atty_art_u_reg_num');
         });
     }
 

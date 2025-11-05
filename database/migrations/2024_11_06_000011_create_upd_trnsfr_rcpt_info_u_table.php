@@ -23,7 +23,7 @@ return new class extends Migration
             $table->text('trnsfr_rcpt_info')->nullable();
 
             $table->unique(['law_cd', 'reg_num', 'mu_num']);
-            $table->index('reg_num', 'idx_reg_num');
+            $table->index('reg_num', 'idx_upd_trnsfr_rcpt_info_u_reg_num');
         });
     }
 

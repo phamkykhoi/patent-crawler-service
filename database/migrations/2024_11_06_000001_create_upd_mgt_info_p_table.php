@@ -50,7 +50,7 @@ return new class extends Migration
             $table->string('prnt_p_app_exam_pub_d_del_ymd')->nullable();
 
             $table->unique(['law_cd', 'reg_num']);
-            $table->index('reg_num', 'idx_reg_num');
+            $table->index('reg_num', 'idx_upd_mgt_info_p_reg_num');
         });
     }
 

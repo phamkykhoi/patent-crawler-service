@@ -47,7 +47,7 @@ return new class extends Migration
             $table->string('pri_clim_cnt')->nullable();
 
             $table->unique(['law_cd', 'reg_num']);
-            $table->index('reg_num', 'idx_reg_num');
+            $table->index('reg_num', 'idx_upd_mgt_info_u_reg_num');
         });
     }
 
