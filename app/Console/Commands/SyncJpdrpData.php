@@ -100,6 +100,26 @@ class SyncJpdrpData extends Command
     ];
 
     /**
+     * Get database driver name
+     */
+    protected function getDriver(): string
+    {
+        return DB::getDriverName();
+    }
+
+    /**
+     * Quote identifier based on database driver
+     */
+    protected function quoteIdentifier(string $identifier): string
+    {
+        $driver = $this->getDriver();
+        if ($driver === 'pgsql') {
+            return '"' . $identifier . '"';
+        }
+        return '`' . $identifier . '`';
+    }
+
+    /**
      * Execute the console command.
      */
     public function handle()
@@ -330,16 +350,11 @@ class SyncJpdrpData extends Command
         try {
             DB::beginTransaction();
 
-            $columnsStr = implode(',', array_map(function($col) {
-                return "`{$col}`";
-            }, $columnsToSync));
+            $driver = $this->getDriver();
+            $quoteFn = [$this, 'quoteIdentifier'];
 
-            // Build ON DUPLICATE KEY UPDATE clause
-            $updateClauses = [];
-            foreach ($updateColumns as $col) {
-                $updateClauses[] = "`{$col}` = VALUES(`{$col}`)";
-            }
-            $updateClause = !empty($updateClauses) ? implode(', ', $updateClauses) : '';
+            $columnsStr = implode(',', array_map($quoteFn, $columnsToSync));
+            $quotedTableName = $this->quoteIdentifier($tableName);
 
             // Build bulk insert values
             $valuesArray = [];
@@ -362,9 +377,31 @@ class SyncJpdrpData extends Command
                 $allValues = array_merge($allValues, $rowValues);
             }
 
-            $sql = "INSERT INTO `{$tableName}` ({$columnsStr}) VALUES " . implode(',', $allPlaceholders);
+            $sql = "INSERT INTO {$quotedTableName} ({$columnsStr}) VALUES " . implode(',', $allPlaceholders);
 
-            if (!empty($updateClause)) {
+            // PostgreSQL uses ON CONFLICT instead of ON DUPLICATE KEY UPDATE
+            if ($driver === 'pgsql' && !empty($updateColumns)) {
+                // Get unique constraint name from key columns
+                $quotedKeyColumns = array_map($quoteFn, $keyColumns);
+                $keyColumnsStr = implode(',', $quotedKeyColumns);
+
+                // Build update clauses using EXCLUDED (PostgreSQL)
+                $updateClauses = [];
+                foreach ($updateColumns as $col) {
+                    $quotedCol = $this->quoteIdentifier($col);
+                    $updateClauses[] = "{$quotedCol} = EXCLUDED.{$quotedCol}";
+                }
+                $updateClause = implode(', ', $updateClauses);
+
+                $sql .= " ON CONFLICT ({$keyColumnsStr}) DO UPDATE SET {$updateClause}";
+            } elseif ($driver !== 'pgsql' && !empty($updateColumns)) {
+                // MySQL/MariaDB syntax
+                $updateClauses = [];
+                foreach ($updateColumns as $col) {
+                    $quotedCol = $this->quoteIdentifier($col);
+                    $updateClauses[] = "{$quotedCol} = VALUES({$quotedCol})";
+                }
+                $updateClause = implode(', ', $updateClauses);
                 $sql .= " ON DUPLICATE KEY UPDATE {$updateClause}";
             }
 
@@ -419,7 +456,17 @@ class SyncJpdrpData extends Command
                 $columnType = $this->inferColumnType($col, $sampleValue);
 
                 try {
-                    DB::statement("ALTER TABLE `{$tableName}` ADD COLUMN `{$col}` {$columnType} NULL");
+                    $driver = $this->getDriver();
+                    $quotedTableName = $this->quoteIdentifier($tableName);
+                    $quotedCol = $this->quoteIdentifier($col);
+
+                    // PostgreSQL uses slightly different syntax
+                    if ($driver === 'pgsql') {
+                        DB::statement("ALTER TABLE {$quotedTableName} ADD COLUMN {$quotedCol} {$columnType}");
+                    } else {
+                        DB::statement("ALTER TABLE {$quotedTableName} ADD COLUMN {$quotedCol} {$columnType} NULL");
+                    }
+
                     $this->info("    ✓ Added column {$col} ({$columnType})");
                     $this->stats['columns_added']++;
                 } catch (\Exception $e) {
@@ -434,22 +481,23 @@ class SyncJpdrpData extends Command
      */
     protected function inferColumnType(string $columnName, $sampleValue = null): string
     {
+        $driver = $this->getDriver();
         $colLower = strtolower($columnName);
 
         if (strpos($colLower, 'num') !== false || strpos($colLower, 'id') !== false) {
-            return 'VARCHAR(50)';
+            return $driver === 'pgsql' ? 'VARCHAR(50)' : 'VARCHAR(50)';
         }
 
         if (strpos($colLower, 'date') !== false || strpos($colLower, 'ymd') !== false) {
-            return 'VARCHAR(8)';
+            return $driver === 'pgsql' ? 'VARCHAR(8)' : 'VARCHAR(8)';
         }
 
         if (strpos($colLower, 'len') !== false) {
-            return 'VARCHAR(50)';
+            return $driver === 'pgsql' ? 'VARCHAR(50)' : 'VARCHAR(50)';
         }
 
         if (strpos($colLower, 'name') !== false || strpos($colLower, 'addr') !== false) {
-            return 'VARCHAR(255)';
+            return $driver === 'pgsql' ? 'VARCHAR(255)' : 'VARCHAR(255)';
         }
 
         if (strpos($colLower, 'info') !== false || strpos($colLower, 'title') !== false || strpos($colLower, 'etc') !== false) {
@@ -457,15 +505,15 @@ class SyncJpdrpData extends Command
         }
 
         if (strpos($colLower, 'flg') !== false || strpos($colLower, 'mk') !== false) {
-            return 'VARCHAR(10)';
+            return $driver === 'pgsql' ? 'VARCHAR(10)' : 'VARCHAR(10)';
         }
 
         if (strpos($colLower, 'typ') !== false && $sampleValue !== null && is_numeric($sampleValue)) {
-            return 'INT';
+            return $driver === 'pgsql' ? 'INTEGER' : 'INT';
         }
 
         // Default
-        return 'VARCHAR(255)';
+        return $driver === 'pgsql' ? 'VARCHAR(255)' : 'VARCHAR(255)';
     }
 
     /**
