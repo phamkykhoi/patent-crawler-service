@@ -70,8 +70,8 @@ return new class extends Migration
             $table->text('aban_clmt_atty_name')->nullable();
             
             $table->unique(['law_cd', 'app_num', 'article_id', 'repeat_num']);
-            $table->index('app_num', 'idx_app_num');
-            $table->index('article_id', 'idx_article_id');
+            $table->index('app_num', 'idx_pmab_gr_appl_case_biblog_app_num');
+            $table->index('article_id', 'idx_pmab_gr_appl_case_biblog_article_id');
         });
     }
 

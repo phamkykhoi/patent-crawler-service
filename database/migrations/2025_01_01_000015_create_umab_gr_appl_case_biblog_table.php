@@ -75,8 +75,8 @@ return new class extends Migration
             $table->text('aban_wrk_place_addr')->nullable();
             
             $table->unique(['law_cd', 'app_num', 'article_id', 'repeat_num']);
-            $table->index('app_num', 'idx_app_num');
-            $table->index('article_id', 'idx_article_id');
+            $table->index('app_num', 'idx_umab_gr_appl_case_biblog_app_num');
+            $table->index('article_id', 'idx_umab_gr_appl_case_biblog_article_id');
         });
     }
 

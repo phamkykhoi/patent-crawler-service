@@ -22,7 +22,7 @@ return new class extends Migration
             $table->string('osos_opp_valid_cnt', 10)->nullable();
             
             $table->unique(['law_cd', 'app_num']);
-            $table->index('app_num', 'idx_app_num');
+            $table->index('app_num', 'idx_umos_g_old_case_stat_app_num');
         });
     }
 

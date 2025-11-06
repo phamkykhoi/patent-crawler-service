@@ -90,8 +90,8 @@ return new class extends Migration
             $table->string('apjd_doc_size', 10)->nullable();
             
             $table->unique(['law_cd', 'app_num', 'storing_seq_num', 'article_id']);
-            $table->index('app_num', 'idx_app_num');
-            $table->index('storing_seq_num', 'idx_storing_seq_num');
+            $table->index('app_num', 'idx_pmap_g_app_doc_app_num');
+            $table->index('storing_seq_num', 'idx_pmap_g_app_doc_storing_seq_num');
         });
     }
 

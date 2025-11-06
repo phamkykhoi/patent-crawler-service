@@ -32,7 +32,7 @@ return new class extends Migration
             $table->char('cscs_citd_others_mk', 1)->nullable();
             
             $table->unique(['law_cd', 'app_num']);
-            $table->index('app_num', 'idx_app_num');
+            $table->index('app_num', 'idx_pmcs_g_case_stat_app_num');
         });
     }
 

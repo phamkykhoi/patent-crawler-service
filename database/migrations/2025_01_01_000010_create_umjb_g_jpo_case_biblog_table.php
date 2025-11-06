@@ -40,7 +40,7 @@ return new class extends Migration
             $table->char('jbdf_fi_facet', 1)->nullable();
             
             $table->unique(['law_cd', 'app_num']);
-            $table->index('app_num', 'idx_app_num');
+            $table->index('app_num', 'idx_umjb_g_jpo_case_biblog_app_num');
         });
     }
 

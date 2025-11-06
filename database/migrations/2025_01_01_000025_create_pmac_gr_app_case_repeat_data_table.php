@@ -20,8 +20,8 @@ return new class extends Migration
             $table->string('acap_appeal_num', 50)->nullable();
             
             $table->unique(['law_cd', 'app_num', 'article_id', 'repeat_num']);
-            $table->index('app_num', 'idx_app_num');
-            $table->index('article_id', 'idx_article_id');
+            $table->index('app_num', 'idx_pmac_gr_app_case_repeat_data_app_num');
+            $table->index('article_id', 'idx_pmac_gr_app_case_repeat_data_article_id');
         });
     }
 
