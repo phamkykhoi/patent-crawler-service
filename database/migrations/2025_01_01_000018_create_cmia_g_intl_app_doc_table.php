@@ -64,7 +64,7 @@ return new class extends Migration
             $table->string('iabj_doc_size', 10)->nullable();
             
             $table->unique(['intl_app_num', 'storing_seq_num', 'article_id']);
-            $table->index('intl_app_num', 'idx_intl_app_num');
+            $table->index('intl_app_num', 'idx_cmia_g_intl_app_doc_intl_app_num');
         });
     }
 

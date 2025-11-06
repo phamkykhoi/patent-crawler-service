@@ -22,7 +22,7 @@ return new class extends Migration
             $table->string('oaep_exam_pub_dt', 8)->nullable();
             
             $table->unique(['law_cd', 'app_num']);
-            $table->index('app_num', 'idx_app_num');
+            $table->index('app_num', 'idx_umoa_g_old_app_case_app_num');
         });
     }
 

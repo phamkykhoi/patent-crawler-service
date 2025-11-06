@@ -68,7 +68,7 @@ return new class extends Migration
             $table->string('bire_crrct_id', 50)->nullable();
             
             $table->unique(['law_cd', 'app_num']);
-            $table->index('app_num', 'idx_app_num');
+            $table->index('app_num', 'idx_cmbi_g_bul_info_app_num');
         });
     }
 

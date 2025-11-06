@@ -52,7 +52,7 @@ return new class extends Migration
             $table->char('aban_delete_flg', 1)->nullable();
             
             $table->unique(['law_cd', 'app_num']);
-            $table->index('app_num', 'idx_app_num');
+            $table->index('app_num', 'idx_pmab_g_appl_case_biblog_app_num');
         });
     }
 

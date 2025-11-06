@@ -50,7 +50,7 @@ return new class extends Migration
             $table->char('acia_lang_flg', 1)->nullable();
             
             $table->unique(['law_cd', 'app_num']);
-            $table->index('app_num', 'idx_app_num');
+            $table->index('app_num', 'idx_umac_g_app_case_app_num');
         });
     }
 

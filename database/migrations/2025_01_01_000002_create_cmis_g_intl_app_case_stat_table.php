@@ -22,7 +22,7 @@ return new class extends Migration
             $table->char('isic_dmy_flg', 1)->nullable();
             $table->char('isic_prlmnry_exam_mk', 1)->nullable();
             
-            $table->index('intl_app_num', 'idx_intl_app_num');
+            $table->index('intl_app_num', 'idx_cmis_g_intl_app_case_stat_intl_app_num');
         });
     }
 
