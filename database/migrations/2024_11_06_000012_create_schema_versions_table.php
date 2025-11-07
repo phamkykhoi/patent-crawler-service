@@ -12,11 +12,11 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('schema_versions', function (Blueprint $table) {
-            $table->string('table_name', 100);
+            $table->text('table_name');
             $table->integer('version');
-            $table->text('columns'); // JSON array of column names
+            $table->text('columns');
             $table->timestamp('created_at')->useCurrent();
-            
+
             $table->primary(['table_name', 'version']);
         });
     }

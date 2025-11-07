@@ -2,6 +2,7 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
@@ -11,17 +12,18 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('sinseinin', function (Blueprint $table) {
-            $table->uuid('id')->primary();
-            $table->string('sinseinin_code', 50)->unique();
-            $table->string('version_no', 10)->nullable();
-            $table->string('kuni_code', 10)->nullable();
-            $table->string('todohuken_code', 10)->nullable();
-            $table->string('kohokan_sikibetu', 10)->nullable();
-            $table->string('masshoriyu_mark', 10)->nullable();
-            $table->string('togosinseinin_code', 50)->nullable();
-            
-            $table->index('sinseinin_code', 'idx_sinseinin_code');
+        Schema::create('upd_sinseinin', function (Blueprint $table) {
+            $table->uuid('id')->primary()->default(DB::raw('gen_random_uuid()'));
+            $table->text('sinseinin_code');
+            $table->text('version_no')->nullable();
+            $table->text('kuni_code')->nullable();
+            $table->text('todohuken_code')->nullable();
+            $table->text('kohokan_sikibetu')->nullable();
+            $table->text('masshoriyu_mark')->nullable();
+            $table->text('togosinseinin_code')->nullable();
+
+            $table->unique('sinseinin_code', 'upd_sinseinin_main_ids');
+            $table->index('sinseinin_code', 'idx_upd_sinseinin_code');
         });
     }
 
@@ -30,7 +32,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('sinseinin');
+        Schema::dropIfExists('upd_sinseinin');
     }
 };
 

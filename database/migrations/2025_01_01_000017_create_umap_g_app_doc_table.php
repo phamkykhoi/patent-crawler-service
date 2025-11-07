@@ -2,6 +2,7 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
@@ -11,89 +12,89 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('umap_g_app_doc', function (Blueprint $table) {
-            $table->uuid('id')->primary();
+        Schema::create('upd_umap_g_app_doc', function (Blueprint $table) {
+            $table->uuid('id')->primary()->default(DB::raw('gen_random_uuid()'));
             $table->integer('law_cd');
-            $table->string('app_num', 50);
+            $table->text('app_num');
             $table->integer('storing_seq_num');
-            $table->string('article_id', 10);
-            $table->char('ap_delete_flg', 1)->nullable();
-            $table->string('ap_update_dttm', 14)->nullable();
-            $table->char('apad_delete_flg', 1)->nullable();
-            $table->string('apad_update_dttm', 14)->nullable();
-            $table->string('apad_create_dt', 8)->nullable();
-            $table->char('apad_valid_flg', 1)->nullable();
-            $table->string('apad_intrmd_doc_cd', 10)->nullable();
-            $table->char('apad_crrspnd_mk', 1)->nullable();
-            $table->string('apad_submit_dt', 8)->nullable();
-            $table->string('apad_rcpt_dt', 8)->nullable();
-            $table->char('apad_inspect_prhbt_flg', 1)->nullable();
-            $table->string('apad_cllctd_amount', 50)->nullable();
-            $table->string('apad_opp_num', 10)->nullable();
-            $table->string('apad_rcpt_num', 50)->nullable();
-            $table->char('apad_frml_chked_mk', 1)->nullable();
-            $table->char('apad_instructed_flg', 1)->nullable();
-            $table->string('apad_dspst_dt', 8)->nullable();
-            $table->string('apad_change_appl_atty_id', 50)->nullable();
-            $table->string('apad_pri_submit_cntry_cd', 10)->nullable();
-            $table->string('apad_ver_num', 10)->nullable();
-            $table->string('apad_descript_ver_num', 10)->nullable();
-            $table->char('apad_invalid_doc_flg', 1)->nullable();
-            $table->string('apad_doc_frmt_typ', 10)->nullable();
-            $table->string('apad_crrspnd_doc_num', 50)->nullable();
-            $table->string('apad_doc_typ_cd', 10)->nullable();
-            $table->string('apad_amend_doc_rcpt_num', 50)->nullable();
-            $table->string('apad_store_num', 50)->nullable();
-            $table->char('apad_dna_flg', 1)->nullable();
-            $table->string('apad_description_page', 10)->nullable();
-            $table->char('apad_descript_flg', 1)->nullable();
-            $table->string('apad_drawing_page', 10)->nullable();
-            $table->char('apad_drawing_flg', 1)->nullable();
-            $table->string('apad_abstrct_doc_page', 10)->nullable();
-            $table->char('apad_abstrct_flg', 1)->nullable();
-            $table->string('apad_attchd_doc_page', 10)->nullable();
-            $table->string('apad_doc_size', 10)->nullable();
-            $table->char('apdd_delete_flg', 1)->nullable();
-            $table->string('apdd_create_dt', 8)->nullable();
-            $table->char('apdd_valid_flg', 1)->nullable();
-            $table->string('apdd_intrmd_doc_cd', 10)->nullable();
-            $table->char('apdd_crrspnd_mk', 1)->nullable();
-            $table->string('apdd_draft_dt', 8)->nullable();
-            $table->string('apdd_dsptch_dt', 8)->nullable();
-            $table->char('apdd_inspect_prhbt_flg', 1)->nullable();
-            $table->string('apdd_cllctd_amount', 50)->nullable();
-            $table->string('apdd_opp_num', 10)->nullable();
-            $table->string('apdd_dsptch_doc_num', 50)->nullable();
-            $table->string('apdd_rjct_reason_art_cd', 10)->nullable();
-            $table->string('apdd_ver_num', 10)->nullable();
-            $table->char('apdd_invalid_doc_flg', 1)->nullable();
-            $table->string('apdd_doc_frmt_typ', 10)->nullable();
-            $table->string('apdd_crrspnd_doc_num', 50)->nullable();
-            $table->string('apdd_doc_typ_cd', 10)->nullable();
-            $table->string('apdd_dsptch_doc_image_page', 10)->nullable();
-            $table->string('apdd_doc_size', 10)->nullable();
-            $table->char('apjd_delete_flg', 1)->nullable();
-            $table->string('apjd_create_dt', 8)->nullable();
-            $table->char('apjd_valid_flg', 1)->nullable();
-            $table->string('apjd_intrmd_doc_cd', 10)->nullable();
-            $table->char('apjd_crrspnd_mk', 1)->nullable();
-            $table->string('apjd_jpo_doc_create_dt', 8)->nullable();
-            $table->char('apjd_inspect_prhbt_flg', 1)->nullable();
-            $table->string('apjd_admnst_appeal_num', 50)->nullable();
-            $table->string('apjd_litigate_num', 50)->nullable();
-            $table->string('apjd_jpo_doc_num', 50)->nullable();
-            $table->string('apjd_goodmoral_violate_cd', 10)->nullable();
-            $table->string('apjd_ver_num', 10)->nullable();
-            $table->char('apjd_invalid_doc_flg', 1)->nullable();
-            $table->string('apjd_doc_frmt_typ', 10)->nullable();
-            $table->string('apjd_crrspnd_doc_num', 50)->nullable();
-            $table->string('apjd_doc_typ_cd', 10)->nullable();
-            $table->string('apjd_jpo_doc_image_page', 10)->nullable();
-            $table->string('apjd_doc_size', 10)->nullable();
-            
-            $table->unique(['law_cd', 'app_num', 'storing_seq_num', 'article_id']);
-            $table->index('app_num', 'idx_umap_g_app_doc_app_num');
-            $table->index('storing_seq_num', 'idx_umap_g_app_doc_storing_seq_num');
+            $table->text('article_id');
+            $table->text('ap_delete_flg')->nullable();
+            $table->text('ap_update_dttm')->nullable();
+            $table->text('apad_delete_flg')->nullable();
+            $table->text('apad_update_dttm')->nullable();
+            $table->text('apad_create_dt')->nullable();
+            $table->text('apad_valid_flg')->nullable();
+            $table->text('apad_intrmd_doc_cd')->nullable();
+            $table->text('apad_crrspnd_mk')->nullable();
+            $table->text('apad_submit_dt')->nullable();
+            $table->text('apad_rcpt_dt')->nullable();
+            $table->text('apad_inspect_prhbt_flg')->nullable();
+            $table->text('apad_cllctd_amount')->nullable();
+            $table->text('apad_opp_num')->nullable();
+            $table->text('apad_rcpt_num')->nullable();
+            $table->text('apad_frml_chked_mk')->nullable();
+            $table->text('apad_instructed_flg')->nullable();
+            $table->text('apad_dspst_dt')->nullable();
+            $table->text('apad_change_appl_atty_id')->nullable();
+            $table->text('apad_pri_submit_cntry_cd')->nullable();
+            $table->text('apad_ver_num')->nullable();
+            $table->text('apad_descript_ver_num')->nullable();
+            $table->text('apad_invalid_doc_flg')->nullable();
+            $table->text('apad_doc_frmt_typ')->nullable();
+            $table->text('apad_crrspnd_doc_num')->nullable();
+            $table->text('apad_doc_typ_cd')->nullable();
+            $table->text('apad_amend_doc_rcpt_num')->nullable();
+            $table->text('apad_store_num')->nullable();
+            $table->text('apad_dna_flg')->nullable();
+            $table->text('apad_description_page')->nullable();
+            $table->text('apad_descript_flg')->nullable();
+            $table->text('apad_drawing_page')->nullable();
+            $table->text('apad_drawing_flg')->nullable();
+            $table->text('apad_abstrct_doc_page')->nullable();
+            $table->text('apad_abstrct_flg')->nullable();
+            $table->text('apad_attchd_doc_page')->nullable();
+            $table->text('apad_doc_size')->nullable();
+            $table->text('apdd_delete_flg')->nullable();
+            $table->text('apdd_create_dt')->nullable();
+            $table->text('apdd_valid_flg')->nullable();
+            $table->text('apdd_intrmd_doc_cd')->nullable();
+            $table->text('apdd_crrspnd_mk')->nullable();
+            $table->text('apdd_draft_dt')->nullable();
+            $table->text('apdd_dsptch_dt')->nullable();
+            $table->text('apdd_inspect_prhbt_flg')->nullable();
+            $table->text('apdd_cllctd_amount')->nullable();
+            $table->text('apdd_opp_num')->nullable();
+            $table->text('apdd_dsptch_doc_num')->nullable();
+            $table->text('apdd_rjct_reason_art_cd')->nullable();
+            $table->text('apdd_ver_num')->nullable();
+            $table->text('apdd_invalid_doc_flg')->nullable();
+            $table->text('apdd_doc_frmt_typ')->nullable();
+            $table->text('apdd_crrspnd_doc_num')->nullable();
+            $table->text('apdd_doc_typ_cd')->nullable();
+            $table->text('apdd_dsptch_doc_image_page')->nullable();
+            $table->text('apdd_doc_size')->nullable();
+            $table->text('apjd_delete_flg')->nullable();
+            $table->text('apjd_create_dt')->nullable();
+            $table->text('apjd_valid_flg')->nullable();
+            $table->text('apjd_intrmd_doc_cd')->nullable();
+            $table->text('apjd_crrspnd_mk')->nullable();
+            $table->text('apjd_jpo_doc_create_dt')->nullable();
+            $table->text('apjd_inspect_prhbt_flg')->nullable();
+            $table->text('apjd_admnst_appeal_num')->nullable();
+            $table->text('apjd_litigate_num')->nullable();
+            $table->text('apjd_jpo_doc_num')->nullable();
+            $table->text('apjd_goodmoral_violate_cd')->nullable();
+            $table->text('apjd_ver_num')->nullable();
+            $table->text('apjd_invalid_doc_flg')->nullable();
+            $table->text('apjd_doc_frmt_typ')->nullable();
+            $table->text('apjd_crrspnd_doc_num')->nullable();
+            $table->text('apjd_doc_typ_cd')->nullable();
+            $table->text('apjd_jpo_doc_image_page')->nullable();
+            $table->text('apjd_doc_size')->nullable();
+
+            $table->unique(['law_cd', 'app_num', 'storing_seq_num', 'article_id'], 'upd_umap_g_app_doc_main_ids');
+            $table->index('app_num', 'idx_upd_umap_g_app_doc_app_num');
+            $table->index('storing_seq_num', 'idx_upd_umap_g_app_doc_storing_seq_num');
         });
     }
 
@@ -102,7 +103,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('umap_g_app_doc');
+        Schema::dropIfExists('upd_umap_g_app_doc');
     }
 };
 
