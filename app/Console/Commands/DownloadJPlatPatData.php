@@ -100,6 +100,10 @@ class DownloadJPlatPatData extends Command
                         ]
                      */
 
+                     if ($bulkDataItem['DATA_NAME'] === '[Daily_Update] 出願マスタ（特実）(Daily_Update_Data_Appm_PatentUtility)') {
+                        dd($bulkDataItem['BULK_DATA']);
+                     }
+
                     if ($bulkDataItem['DATA_NAME'] === '[Daily_Update] 登録マスタ（特実）(Daily_Update_Data_Registrm_PatentUtility)') {
                         foreach ($bulkDataItem['BULK_DATA'] as $bulkData) {
                             if (count($bulkData['BULK_DL_DATA_INFO']) > 1) {
@@ -126,7 +130,6 @@ class DownloadJPlatPatData extends Command
             } else {
                 throw new \Exception("API request failed with status: {$response->status()}");
             }
-
         } catch (\Exception $e) {
             $this->error('');
             $this->error('✗ Error: ' . $e->getMessage());
