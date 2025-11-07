@@ -2,6 +2,7 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
@@ -11,28 +12,28 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('pmcs_g_case_stat', function (Blueprint $table) {
-            $table->uuid('id')->primary();
+        Schema::create('upd_pmcs_g_case_stat', function (Blueprint $table) {
+            $table->uuid('id')->primary()->default(DB::raw('gen_random_uuid()'));
             $table->integer('law_cd');
-            $table->string('app_num', 50);
-            $table->char('cs_delete_flg', 1)->nullable();
-            $table->string('cs_update_dttm', 14)->nullable();
-            $table->char('cscs_delete_flg', 1)->nullable();
-            $table->char('cscs_exam_claim_list_mk', 1)->nullable();
-            $table->string('cscs_final_dspst_dt', 8)->nullable();
-            $table->char('cscs_acclrtd_exam_mk', 1)->nullable();
-            $table->char('cscs_pub_prep_flg', 1)->nullable();
-            $table->char('cscs_applicable_law_class', 1)->nullable();
-            $table->string('cscs_exam_typ', 2)->nullable();
-            $table->string('cscs_litigate_cd', 2)->nullable();
-            $table->string('cscs_final_decision_typ_cd', 2)->nullable();
-            $table->string('cscs_exam_claim_cnt', 10)->nullable();
-            $table->char('cscs_newapp_flg', 1)->nullable();
-            $table->char('cscs_later_intnl_pri_flg', 1)->nullable();
-            $table->char('cscs_citd_others_mk', 1)->nullable();
-            
-            $table->unique(['law_cd', 'app_num']);
-            $table->index('app_num', 'idx_pmcs_g_case_stat_app_num');
+            $table->text('app_num');
+            $table->text('cs_delete_flg')->nullable();
+            $table->text('cs_update_dttm')->nullable();
+            $table->text('cscs_delete_flg')->nullable();
+            $table->text('cscs_exam_claim_list_mk')->nullable();
+            $table->text('cscs_final_dspst_dt')->nullable();
+            $table->text('cscs_acclrtd_exam_mk')->nullable();
+            $table->text('cscs_pub_prep_flg')->nullable();
+            $table->text('cscs_applicable_law_class')->nullable();
+            $table->text('cscs_exam_typ')->nullable();
+            $table->text('cscs_litigate_cd')->nullable();
+            $table->text('cscs_final_decision_typ_cd')->nullable();
+            $table->text('cscs_exam_claim_cnt')->nullable();
+            $table->text('cscs_newapp_flg')->nullable();
+            $table->text('cscs_later_intnl_pri_flg')->nullable();
+            $table->text('cscs_citd_others_mk')->nullable();
+
+            $table->unique(['law_cd', 'app_num'], 'upd_pmcs_g_case_stat_main_ids');
+            $table->index('app_num', 'idx_upd_pmcs_g_case_stat_app_num');
         });
     }
 
@@ -41,7 +42,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('pmcs_g_case_stat');
+        Schema::dropIfExists('upd_pmcs_g_case_stat');
     }
 };
 
