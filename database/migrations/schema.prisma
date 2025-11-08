@@ -1,0 +1,1150 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model upd_cmis_g_intl_app_case_stat {
+  id                     String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  intl_app_num           String  @unique(map: "upd_cmis_g_intl_app_case_stat_main_ids") @db.Text
+  is_delete_flg          String? @db.Text
+  is_update_dttm         String? @db.Text
+  isic_delete_flg        String? @db.Text
+  isic_isr_uncreated_flg String? @db.Text
+  isic_inspect_prhbt_flg String? @db.Text
+  isic_dmy_flg           String? @db.Text
+  isic_prlmnry_exam_mk   String? @db.Text
+
+  @@index([intl_app_num], map: "idx_upd_cmis_g_intl_app_case_stat_intl_app_num")
+}
+
+model migrations {
+  id        Int    @id @default(autoincrement())
+  migration String @db.Text
+  batch     Int
+}
+
+model upd_pmac_g_app_case {
+  id                      String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  law_cd                  Int
+  app_num                 String  @db.Text
+  ac_delete_flg           String? @db.Text
+  ac_update_dttm          String? @db.Text
+  acai_delete_flg         String? @db.Text
+  acai_app_dt             String? @db.Text
+  acai_app_typ_1          String? @db.Text
+  acai_app_typ_2          String? @db.Text
+  acai_app_typ_3          String? @db.Text
+  acai_app_typ_4          String? @db.Text
+  acai_app_typ_5          String? @db.Text
+  acai_refer_num          String? @db.Text
+  acai_org_lang_app_flg   String? @db.Text
+  acup_delete_flg         String? @db.Text
+  acup_pub_num            String? @db.Text
+  acup_pub_dt             String? @db.Text
+  actp_delete_flg         String? @db.Text
+  actp_trnsl_pub_num      String? @db.Text
+  actp_trnsl_pub_dt       String? @db.Text
+  actp_trnsl_repub_dt     String? @db.Text
+  acap_delete_flg         String? @db.Text
+  acld_delete_flg         String? @db.Text
+  acld_final_dspst_typ    String? @db.Text
+  acld_final_dspst_dt     String? @db.Text
+  acrg_delete_flg         String? @db.Text
+  acrg_reg_num            String? @db.Text
+  acrg_reg_dt             String? @db.Text
+  acrb_delete_flg         String? @db.Text
+  acrb_reg_bul_publish_dt String? @db.Text
+  acia_delete_flg         String? @db.Text
+  acia_intl_app_num       String? @db.Text
+  acia_intl_pub_num       String? @db.Text
+  acia_intl_pub_dt        String? @db.Text
+  acia_trnsl_submit_dt    String? @db.Text
+  acia_lang_flg           String? @db.Text
+
+  @@unique([law_cd, app_num], map: "upd_pmac_g_app_case_main_ids")
+  @@index([app_num], map: "idx_upd_pmac_g_app_case_app_num")
+}
+
+model schema_versions {
+  table_name String   @db.Text
+  version    Int
+  columns    String
+  created_at DateTime @default(now()) @db.Timestamp(0)
+
+  @@id([table_name, version])
+}
+
+model upd_sinseinin {
+  id                 String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  sinseinin_code     String  @unique(map: "upd_sinseinin_main_ids") @db.Text
+  version_no         String? @db.Text
+  kuni_code          String? @db.Text
+  todohuken_code     String? @db.Text
+  kohokan_sikibetu   String? @db.Text
+  masshoriyu_mark    String? @db.Text
+  togosinseinin_code String? @db.Text
+
+  @@index([sinseinin_code], map: "idx_upd_sinseinin_code")
+}
+
+model upd_atty_art_p {
+  id               String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  processing_type  Int?
+  law_cd           Int
+  reg_num          String  @db.Text
+  split_num        String? @db.Text
+  app_num          String? @db.Text
+  rec_num          String? @db.Text
+  pe_num           String  @db.Text
+  atty_art_upd_ymd String? @db.Text
+  atty_appl_id     String? @db.Text
+  atty_typ         Int?
+  atty_name_len    String? @db.Text
+  atty_name        String? @db.Text
+
+  @@unique([law_cd, reg_num, pe_num], map: "upd_atty_art_p_main_ids")
+  @@index([reg_num], map: "idx_upd_atty_art_p_reg_num")
+}
+
+model upd_atty_art_u {
+  id               String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  processing_type  Int?
+  law_cd           Int
+  reg_num          String  @db.Text
+  split_num        String? @db.Text
+  app_num          String? @db.Text
+  rec_num          String? @db.Text
+  pe_num           String  @db.Text
+  atty_art_upd_ymd String? @db.Text
+  atty_appl_id     String? @db.Text
+  atty_typ         Int?
+  atty_name_len    String? @db.Text
+  atty_name        String? @db.Text
+
+  @@unique([law_cd, reg_num, pe_num], map: "upd_atty_art_u_main_ids")
+  @@index([reg_num], map: "idx_upd_atty_art_u_reg_num")
+}
+
+model upd_mgt_info_p {
+  id                             String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  processing_type                Int?
+  law_cd                         Int
+  reg_num                        String  @db.Text
+  split_num                      String? @db.Text
+  mstr_updt_year_month_day       String? @db.Text
+  tscript_inspct_prhbt_flg       String? @db.Text
+  conti_prd_expire_ymd           String? @db.Text
+  next_pen_pymnt_tm_lmt_ymd      String? @db.Text
+  last_pymnt_yearly              String? @db.Text
+  share_rate                     String? @db.Text
+  pblc_prvt_trnsfr_reg_ymd       String? @db.Text
+  right_ersr_id                  String? @db.Text
+  right_disppr_year_month_day    String? @db.Text
+  close_orgnl_reg_trnsfr_rec_flg String? @db.Text
+  close_reg_year_month_day       String? @db.Text
+  gvrnmnt_relation_id_flg        String? @db.Text
+  pen_suppl_flg                  String? @db.Text
+  trust_reg_flg                  String? @db.Text
+  app_num                        String? @db.Text
+  recvry_num                     String? @db.Text
+  app_year_month_day             String? @db.Text
+  app_exam_pub_num               String? @db.Text
+  app_exam_pub_year_month_day    String? @db.Text
+  finl_dcsn_year_month_day       String? @db.Text
+  trial_dcsn_year_month_day      String? @db.Text
+  set_reg_year_month_day         String? @db.Text
+  invent_cnt_claim_cnt_cls_cnt   String? @db.Text
+  invent_title_etc_len           String? @db.Text
+  invent_title_etc               String?
+  pri_cntry_name_cd              String? @db.Text
+  pri_clim_year_month_day        String? @db.Text
+  pri_clim_cnt                   String? @db.Text
+  prnt_app_patent_no_prncpl_d_no String? @db.Text
+  prnt_p_app_ymd__d_reg_ymd      String? @db.Text
+  prnt_p_app_exam_pub_d_del_ymd  String? @db.Text
+
+  @@unique([law_cd, reg_num], map: "upd_mgt_info_p_main_ids")
+  @@index([reg_num], map: "idx_upd_mgt_info_p_reg_num")
+}
+
+model upd_mgt_info_u {
+  id                             String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  processing_type                Int?
+  law_cd                         Int
+  reg_num                        String  @db.Text
+  split_num                      String? @db.Text
+  mstr_updt_year_month_day       String? @db.Text
+  tscript_inspct_prhbt_flg       String? @db.Text
+  conti_prd_expire_ymd           String? @db.Text
+  next_pen_pymnt_tm_lmt_ymd      String? @db.Text
+  last_pymnt_yearly              String? @db.Text
+  share_rate                     String? @db.Text
+  pblc_prvt_trnsfr_reg_ymd       String? @db.Text
+  right_ersr_id                  String? @db.Text
+  right_disppr_year_month_day    String? @db.Text
+  close_orgnl_reg_trnsfr_rec_flg String? @db.Text
+  close_reg_year_month_day       String? @db.Text
+  gvrnmnt_relation_id_flg        String? @db.Text
+  pen_suppl_flg                  String? @db.Text
+  trust_reg_flg                  String? @db.Text
+  app_num                        String? @db.Text
+  recvry_num                     String? @db.Text
+  app_year_month_day             String? @db.Text
+  app_exam_pub_num               String? @db.Text
+  app_exam_pub_year_month_day    String? @db.Text
+  finl_dcsn_year_month_day       String? @db.Text
+  trial_dcsn_year_month_day      String? @db.Text
+  set_reg_year_month_day         String? @db.Text
+  invent_cnt_claim_cnt_cls_cnt   String? @db.Text
+  invent_title_etc_len           String? @db.Text
+  invent_title_etc               String?
+  pri_cntry_name_cd              String? @db.Text
+  pri_clim_year_month_day        String? @db.Text
+  pri_clim_cnt                   String? @db.Text
+
+  @@unique([law_cd, reg_num], map: "upd_mgt_info_u_main_ids")
+  @@index([reg_num], map: "idx_upd_mgt_info_u_reg_num")
+}
+
+model upd_mrgn_ext_app_num_p {
+  id                String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  processing_type   Int?
+  law_cd            Int
+  reg_num           String  @db.Text
+  split_num         String? @db.Text
+  app_num           String? @db.Text
+  mrgn_info_upd_ymd String? @db.Text
+  mu_num            String? @db.Text
+  mrgn_ext_app_num  String? @db.Text
+
+  @@unique([law_cd, reg_num, mu_num], map: "upd_mrgn_ext_app_num_p_main_ids")
+  @@index([reg_num], map: "idx_upd_mrgn_ext_app_num_p_reg_num")
+}
+
+model upd_prog_info_div_p {
+  id                    String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  processing_type       Int?
+  law_cd                Int
+  reg_num               String  @db.Text
+  split_num             String? @db.Text
+  app_num               String? @db.Text
+  rec_num               String? @db.Text
+  pe_num                String  @db.Text
+  prog_info_upd_ymd     String? @db.Text
+  reg_intrmd_cd         String? @db.Text
+  crrspnd_mk            String? @db.Text
+  rcpt_pymnt_dsptch_ymd String? @db.Text
+  rcpt_num_common_use   String? @db.Text
+
+  @@unique([law_cd, reg_num, pe_num], map: "upd_prog_info_div_p_main_ids")
+  @@index([reg_num], map: "idx_upd_prog_info_div_p_reg_num")
+}
+
+model upd_prog_info_div_u {
+  id                    String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  processing_type       Int?
+  law_cd                Int
+  reg_num               String  @db.Text
+  split_num             String? @db.Text
+  app_num               String? @db.Text
+  rec_num               String? @db.Text
+  pe_num                String  @db.Text
+  prog_info_upd_ymd     String? @db.Text
+  reg_intrmd_cd         String? @db.Text
+  crrspnd_mk            String? @db.Text
+  rcpt_pymnt_dsptch_ymd String? @db.Text
+  rcpt_num_common_use   String? @db.Text
+
+  @@unique([law_cd, reg_num, pe_num], map: "upd_prog_info_div_u_main_ids")
+  @@index([reg_num], map: "idx_upd_prog_info_div_u_reg_num")
+}
+
+model upd_right_person_art_p {
+  id                    String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  processing_type       Int?
+  law_cd                Int
+  reg_num               String  @db.Text
+  split_num             String? @db.Text
+  app_num               String? @db.Text
+  rec_num               String? @db.Text
+  pe_num                String  @db.Text
+  right_psn_art_upd_ymd String? @db.Text
+  right_person_appl_id  String? @db.Text
+  right_person_addr_len String? @db.Text
+  right_person_addr     String? @db.Text
+  right_person_name_len String? @db.Text
+  right_person_name     String? @db.Text
+
+  @@unique([law_cd, reg_num, pe_num], map: "upd_right_person_art_p_main_ids")
+  @@index([reg_num], map: "idx_upd_right_person_art_p_reg_num")
+}
+
+model upd_right_person_art_u {
+  id                    String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  processing_type       Int?
+  law_cd                Int
+  reg_num               String  @db.Text
+  split_num             String? @db.Text
+  app_num               String? @db.Text
+  rec_num               String? @db.Text
+  pe_num                String  @db.Text
+  right_psn_art_upd_ymd String? @db.Text
+  right_person_appl_id  String? @db.Text
+  right_person_addr_len String? @db.Text
+  right_person_addr     String? @db.Text
+  right_person_name_len String? @db.Text
+  right_person_name     String? @db.Text
+
+  @@unique([law_cd, reg_num, pe_num], map: "upd_right_person_art_u_main_ids")
+  @@index([reg_num], map: "idx_upd_right_person_art_u_reg_num")
+}
+
+model upd_trnsfr_rcpt_info_p {
+  id                String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  processing_type   Int?
+  law_cd            Int
+  reg_num           String  @db.Text
+  split_num         String? @db.Text
+  app_num           String? @db.Text
+  mrgn_info_upd_ymd String? @db.Text
+  mu_num            String  @db.Text
+  trnsfr_rcpt_info  String?
+
+  @@unique([law_cd, reg_num, mu_num], map: "upd_trnsfr_rcpt_info_p_main_ids")
+  @@index([reg_num], map: "idx_upd_trnsfr_rcpt_info_p_reg_num")
+}
+
+model upd_trnsfr_rcpt_info_u {
+  id                String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  processing_type   Int?
+  law_cd            Int
+  reg_num           String  @db.Text
+  split_num         String? @db.Text
+  app_num           String? @db.Text
+  mrgn_info_upd_ymd String? @db.Text
+  mu_num            String  @db.Text
+  trnsfr_rcpt_info  String?
+
+  @@unique([law_cd, reg_num, mu_num], map: "upd_trnsfr_rcpt_info_u_main_ids")
+  @@index([reg_num], map: "idx_upd_trnsfr_rcpt_info_u_reg_num")
+}
+
+model upd_cmbi_g_bul_info {
+  id                           String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  law_cd                       Int
+  app_num                      String  @db.Text
+  bi_delete_flg                String? @db.Text
+  bi_update_dttm               String? @db.Text
+  biub_delete_flg              String? @db.Text
+  biub_total_vol_num           String? @db.Text
+  biub_annual_vol_num          String? @db.Text
+  biub_each_fld_vol_num        String? @db.Text
+  biub_each_fld_annual_vol_num String? @db.Text
+  biub_publish_class           String? @db.Text
+  bipb_delete_flg              String? @db.Text
+  bipb_total_vol_num           String? @db.Text
+  bipb_annual_vol_num          String? @db.Text
+  bipb_each_fld_vol_num        String? @db.Text
+  bipb_each_fld_annual_vol_num String? @db.Text
+  bipb_publish_class           String? @db.Text
+  birw_delete_flg              String? @db.Text
+  birw_total_vol_num           String? @db.Text
+  birw_annual_vol_num          String? @db.Text
+  birw_each_law_vol_num        String? @db.Text
+  birw_each_law_annual_vol_num String? @db.Text
+  biab_delete_flg              String? @db.Text
+  biab_total_vol_num           String? @db.Text
+  biab_annual_vol_num          String? @db.Text
+  biab_each_fld_vol_num        String? @db.Text
+  biab_each_fld_annual_vol_num String? @db.Text
+  biab_publish_class           String? @db.Text
+  biab_bul_publish_dt          String? @db.Text
+  biab_crrct_id                String? @db.Text
+  biau_delete_flg              String? @db.Text
+  biau_total_vol_num           String? @db.Text
+  biau_annual_vol_num          String? @db.Text
+  biau_each_fld_vol_num        String? @db.Text
+  biau_each_fld_annual_vol_num String? @db.Text
+  biau_publish_class           String? @db.Text
+  biau_bul_publish_dt          String? @db.Text
+  biau_crrct_id                String? @db.Text
+  bipe_delete_flg              String? @db.Text
+  bipe_total_vol_num           String? @db.Text
+  bipe_annual_vol_num          String? @db.Text
+  bipe_each_fld_vol_num        String? @db.Text
+  bipe_each_fld_annual_vol_num String? @db.Text
+  bipe_publish_class           String? @db.Text
+  bipe_bul_publish_dt          String? @db.Text
+  bipe_crrct_id                String? @db.Text
+  bire_delete_flg              String? @db.Text
+  bire_total_vol_num           String? @db.Text
+  bire_annual_vol_num          String? @db.Text
+  bire_each_fld_vol_num        String? @db.Text
+  bire_each_fld_annual_vol_num String? @db.Text
+  bire_publish_class           String? @db.Text
+  bire_bul_publish_dt          String? @db.Text
+  bire_crrct_id                String? @db.Text
+
+  @@unique([law_cd, app_num], map: "upd_cmbi_g_bul_info_main_ids")
+  @@index([app_num], map: "idx_upd_cmbi_g_bul_info_app_num")
+}
+
+model upd_cmia_g_intl_app_doc {
+  id                         String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  intl_app_num               String  @db.Text
+  storing_seq_num            Int
+  article_id                 String  @db.Text
+  ia_delete_flg              String? @db.Text
+  ia_update_dttm             String? @db.Text
+  iaba_delete_flg            String? @db.Text
+  iaba_create_dt             String? @db.Text
+  iaba_valid_flg             String? @db.Text
+  iaba_intrmd_doc_cd         String? @db.Text
+  iaba_rcpt_dt               String? @db.Text
+  iaba_checked_flg           String? @db.Text
+  iaba_dspst_dt              String? @db.Text
+  iaba_crrspnd_doc_num       String? @db.Text
+  iaba_rcpt_num              String? @db.Text
+  iaba_doc_typ_cd            String? @db.Text
+  iaba_ver_num               String? @db.Text
+  iaba_descript_ver_num      String? @db.Text
+  iaba_dna_flg               String? @db.Text
+  iaba_description_page      String? @db.Text
+  iaba_descript_flg          String? @db.Text
+  iaba_drawing_page          String? @db.Text
+  iaba_drawing_flg           String? @db.Text
+  iaba_abstrct_doc_page      String? @db.Text
+  iaba_abstrct_flg           String? @db.Text
+  iaba_attchd_doc_page       String? @db.Text
+  iaba_doc_size              String? @db.Text
+  iabd_delete_flg            String? @db.Text
+  iabd_valid_flg             String? @db.Text
+  iabd_intrmd_doc_cd         String? @db.Text
+  iabd_dsptch_dt             String? @db.Text
+  iabd_crrspnd_doc_num       String? @db.Text
+  iabd_dsptch_doc_num        String? @db.Text
+  iabd_doc_typ_cd            String? @db.Text
+  iabd_ver_num               String? @db.Text
+  iabd_invalid_doc_flg       String? @db.Text
+  iabd_doc_frmt_typ          String? @db.Text
+  iabd_dsptch_doc_image_page String? @db.Text
+  iabd_doc_size              String? @db.Text
+  iabj_delete_flg            String? @db.Text
+  iabj_create_dt             String? @db.Text
+  iabj_valid_flg             String? @db.Text
+  iabj_intrmd_doc_cd         String? @db.Text
+  iabj_dspst_dt              String? @db.Text
+  iabj_crrspnd_doc_num       String? @db.Text
+  iabj_jpo_doc_num           String? @db.Text
+  iabj_doc_typ_cd            String? @db.Text
+  iabj_doc_frmt_typ          String? @db.Text
+  iabj_jpo_doc_image_page    String? @db.Text
+  iabj_doc_size              String? @db.Text
+
+  @@unique([intl_app_num, storing_seq_num, article_id], map: "upd_cmia_g_intl_app_doc_main_ids")
+  @@index([intl_app_num], map: "idx_upd_cmia_g_intl_app_doc_intl_app_num")
+}
+
+model upd_pmab_g_appl_case_biblog {
+  id                      String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  law_cd                  Int
+  app_num                 String  @db.Text
+  ab_delete_flg           String? @db.Text
+  ab_update_dttm          String? @db.Text
+  abcn_delete_flg         String? @db.Text
+  abcn_app_claim_cnt      String? @db.Text
+  abcn_exam_pub_claim_cnt String? @db.Text
+  abcn_reg_claim_cnt      String? @db.Text
+  abrt_delete_flg         String? @db.Text
+  abrt_right_trf          String? @db.Text
+  abrt_license_permission String? @db.Text
+  abpp_delete_flg         String? @db.Text
+  abip_delete_flg         String? @db.Text
+  abna_delete_flg         String? @db.Text
+  abpa_delete_flg         String? @db.Text
+  abpa_parent_app_typ     String? @db.Text
+  abpa_parent_app_law_cd  String? @db.Text
+  abpa_parent_app_num     String? @db.Text
+  abpa_retroacted_dt      String? @db.Text
+  abin_delete_flg         String? @db.Text
+  abin_invent_title       String?
+  abaa_delete_flg         String? @db.Text
+  abii_delete_flg         String? @db.Text
+  abti_delete_flg         String? @db.Text
+  abds_delete_flg         String? @db.Text
+  abpl_delete_flg         String? @db.Text
+  abpl_dspst_content      String? @db.Text
+  abpl_patent_num         String? @db.Text
+  abpl_dspst_dt           String? @db.Text
+  abpl_ext_period         String? @db.Text
+  abli_delete_flg         String? @db.Text
+  abdp_delete_flg         String? @db.Text
+  abnl_delete_flg         String? @db.Text
+  abnl_novelty_lack_class String? @db.Text
+  abae_delete_flg         String? @db.Text
+  abct_delete_flg         String? @db.Text
+  aban_delete_flg         String? @db.Text
+
+  @@unique([law_cd, app_num], map: "upd_pmab_g_appl_case_biblog_main_ids")
+  @@index([app_num], map: "idx_upd_pmab_g_appl_case_biblog_app_num")
+}
+
+model upd_pmab_gr_appl_case_biblog {
+  id                        String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  law_cd                    Int
+  app_num                   String  @db.Text
+  article_id                String  @db.Text
+  repeat_num                Int
+  abpp_pri_app_num          String? @db.Text
+  abpp_pri_claim_dt         String? @db.Text
+  abpp_pri_cntry_cd         String? @db.Text
+  abip_intnl_pri_law_cd     String? @db.Text
+  abip_intnl_pri_app_num    String? @db.Text
+  abip_intl_app_num         String? @db.Text
+  abip_claim_dt             String? @db.Text
+  abna_newapp_app_typ       String? @db.Text
+  abna_newapp_law_cd        String? @db.Text
+  abna_newapp_app_num       String? @db.Text
+  abaa_appl_atty_class      String? @db.Text
+  abaa_appl_atty_id         String? @db.Text
+  abaa_change_num           String? @db.Text
+  abaa_req_typ              String? @db.Text
+  abaa_nationality_cd       String? @db.Text
+  abaa_pref_cd              String? @db.Text
+  abaa_rep_appl_id          String? @db.Text
+  abaa_above_appl_cnt       String? @db.Text
+  abaa_atty_other_cnt       String? @db.Text
+  abaa_atty_typ_cd          String? @db.Text
+  abaa_atty_qualify_cd      String? @db.Text
+  abaa_crrspnd_num          String? @db.Text
+  abii_inventor_name        String?
+  abii_inventor_addr        String?
+  abti_trust_typ            String? @db.Text
+  abti_nationality_cd       String? @db.Text
+  abti_name                 String?
+  abti_addr                 String?
+  abds_design_state_cd      String? @db.Text
+  abds_regional_patent_mk   String? @db.Text
+  abli_later_pri_law_cd     String? @db.Text
+  abli_later_pri_app_num    String? @db.Text
+  abli_later_pri_app_dt     String? @db.Text
+  abdp_mcrb_dpst_instt_id   String? @db.Text
+  abdp_mcrb_dpst_num        String? @db.Text
+  abnl_novelty_lack_art_cd  String? @db.Text
+  abnl_novelty_lack_content String?
+  abae_crrspnd_num          String? @db.Text
+  abae_appl_atty_addr       String?
+  abae_appl_atty_name       String?
+  abct_clmt_atty_class      String? @db.Text
+  abct_clmt_atty_id         String? @db.Text
+  abct_change_num           String? @db.Text
+  abct_req_typ              String? @db.Text
+  abct_pref_cd              String? @db.Text
+  abct_rep_clmt_id          String? @db.Text
+  abct_atty_typ_cd          String? @db.Text
+  abct_crrspnd_num          String? @db.Text
+  aban_crrspnd_num          String? @db.Text
+  aban_clmt_atty_addr       String?
+  aban_clmt_atty_name       String?
+
+  @@unique([law_cd, app_num, article_id, repeat_num], map: "upd_pmab_gr_appl_case_biblog_main_ids")
+  @@index([app_num], map: "idx_upd_pmab_gr_appl_case_biblog_app_num")
+  @@index([article_id], map: "idx_upd_pmab_gr_appl_case_biblog_article_id")
+}
+
+model upd_pmac_gr_app_case_repeat_data {
+  id              String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  law_cd          Int
+  app_num         String  @db.Text
+  article_id      String  @db.Text
+  repeat_num      Int
+  acap_appeal_num String? @db.Text
+
+  @@unique([law_cd, app_num, article_id, repeat_num], map: "upd_pmac_gr_app_case_repeat_data_main_ids")
+  @@index([app_num], map: "idx_upd_pmac_gr_app_case_repeat_data_app_num")
+  @@index([article_id], map: "idx_upd_pmac_gr_app_case_repeat_data_article_id")
+}
+
+model upd_pmap_g_app_doc {
+  id                         String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  law_cd                     Int
+  app_num                    String  @db.Text
+  storing_seq_num            Int
+  article_id                 String  @db.Text
+  ap_delete_flg              String? @db.Text
+  ap_update_dttm             String? @db.Text
+  apad_delete_flg            String? @db.Text
+  apad_update_dttm           String? @db.Text
+  apad_create_dt             String? @db.Text
+  apad_valid_flg             String? @db.Text
+  apad_intrmd_doc_cd         String? @db.Text
+  apad_crrspnd_mk            String? @db.Text
+  apad_submit_dt             String? @db.Text
+  apad_rcpt_dt               String? @db.Text
+  apad_inspect_prhbt_flg     String? @db.Text
+  apad_opp_num               String? @db.Text
+  apad_rcpt_num              String? @db.Text
+  apad_frml_chked_mk         String? @db.Text
+  apad_instructed_flg        String? @db.Text
+  apad_dspst_dt              String? @db.Text
+  apad_change_appl_atty_id   String? @db.Text
+  apad_pri_submit_cntry_cd   String? @db.Text
+  apad_ver_num               String? @db.Text
+  apad_descript_ver_num      String? @db.Text
+  apad_invalid_doc_flg       String? @db.Text
+  apad_doc_frmt_typ          String? @db.Text
+  apad_crrspnd_doc_num       String? @db.Text
+  apad_doc_typ_cd            String? @db.Text
+  apad_amend_doc_rcpt_num    String? @db.Text
+  apad_store_num             String? @db.Text
+  apad_dna_flg               String? @db.Text
+  apad_description_page      String? @db.Text
+  apad_descript_flg          String? @db.Text
+  apad_drawing_page          String? @db.Text
+  apad_drawing_flg           String? @db.Text
+  apad_abstrct_doc_page      String? @db.Text
+  apad_abstrct_flg           String? @db.Text
+  apad_attchd_doc_page       String? @db.Text
+  apad_doc_size              String? @db.Text
+  apdd_delete_flg            String? @db.Text
+  apdd_create_dt             String? @db.Text
+  apdd_valid_flg             String? @db.Text
+  apdd_intrmd_doc_cd         String? @db.Text
+  apdd_crrspnd_mk            String? @db.Text
+  apdd_draft_dt              String? @db.Text
+  apdd_dsptch_dt             String? @db.Text
+  apdd_inspect_prhbt_flg     String? @db.Text
+  apdd_opp_num               String? @db.Text
+  apdd_dsptch_doc_num        String? @db.Text
+  apdd_rjct_reason_art_cd    String? @db.Text
+  apdd_ver_num               String? @db.Text
+  apdd_invalid_doc_flg       String? @db.Text
+  apdd_doc_frmt_typ          String? @db.Text
+  apdd_crrspnd_doc_num       String? @db.Text
+  apdd_doc_typ_cd            String? @db.Text
+  apdd_dsptch_doc_image_page String? @db.Text
+  apdd_doc_size              String? @db.Text
+  apjd_delete_flg            String? @db.Text
+  apjd_create_dt             String? @db.Text
+  apjd_valid_flg             String? @db.Text
+  apjd_intrmd_doc_cd         String? @db.Text
+  apjd_crrspnd_mk            String? @db.Text
+  apjd_jpo_doc_create_dt     String? @db.Text
+  apjd_inspect_prhbt_flg     String? @db.Text
+  apjd_admnst_appeal_num     String? @db.Text
+  apjd_litigate_num          String? @db.Text
+  apjd_jpo_doc_num           String? @db.Text
+  apjd_goodmoral_violate_cd  String? @db.Text
+  apjd_ver_num               String? @db.Text
+  apjd_invalid_doc_flg       String? @db.Text
+  apjd_doc_frmt_typ          String? @db.Text
+  apjd_crrspnd_doc_num       String? @db.Text
+  apjd_doc_typ_cd            String? @db.Text
+  apjd_jpo_doc_image_page    String? @db.Text
+  apjd_doc_size              String? @db.Text
+
+  @@unique([law_cd, app_num, storing_seq_num, article_id], map: "upd_pmap_g_app_doc_main_ids")
+  @@index([app_num], map: "idx_upd_pmap_g_app_doc_app_num")
+  @@index([storing_seq_num], map: "idx_upd_pmap_g_app_doc_storing_seq_num")
+}
+
+model upd_pmcs_g_case_stat {
+  id                         String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  law_cd                     Int
+  app_num                    String  @db.Text
+  cs_delete_flg              String? @db.Text
+  cs_update_dttm             String? @db.Text
+  cscs_delete_flg            String? @db.Text
+  cscs_exam_claim_list_mk    String? @db.Text
+  cscs_final_dspst_dt        String? @db.Text
+  cscs_acclrtd_exam_mk       String? @db.Text
+  cscs_pub_prep_flg          String? @db.Text
+  cscs_applicable_law_class  String? @db.Text
+  cscs_exam_typ              String? @db.Text
+  cscs_litigate_cd           String? @db.Text
+  cscs_final_decision_typ_cd String? @db.Text
+  cscs_exam_claim_cnt        String? @db.Text
+  cscs_newapp_flg            String? @db.Text
+  cscs_later_intnl_pri_flg   String? @db.Text
+  cscs_citd_others_mk        String? @db.Text
+
+  @@unique([law_cd, app_num], map: "upd_pmcs_g_case_stat_main_ids")
+  @@index([app_num], map: "idx_upd_pmcs_g_case_stat_app_num")
+}
+
+model upd_pmjb_g_jpo_case_biblog {
+  id                         String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  law_cd                     Int
+  app_num                    String  @db.Text
+  jb_delete_flg              String? @db.Text
+  jb_update_dttm             String? @db.Text
+  jbui_delete_flg            String? @db.Text
+  jbri_delete_flg            String? @db.Text
+  jbdc_delete_flg            String? @db.Text
+  jbdc_desig_class_ipc       String? @db.Text
+  jboi_delete_flg            String? @db.Text
+  jboi_staff_id              String? @db.Text
+  jboi_div_cd                String? @db.Text
+  jbpo_delete_flg            String? @db.Text
+  jbpo_goodmoral_mk          String? @db.Text
+  jbuf_delete_flg            String? @db.Text
+  jbrf_delete_flg            String? @db.Text
+  jbdf_delete_flg            String? @db.Text
+  jbdf_fi_section            String? @db.Text
+  jbdf_fi_class              String? @db.Text
+  jbdf_fi_subclass           String? @db.Text
+  jbdf_fi_main_grp           String? @db.Text
+  jbdf_fi_separator          String? @db.Text
+  jbdf_fi_sub_grp            String? @db.Text
+  jbdf_fi_subdiv_sign        String? @db.Text
+  jbdf_fi_separate_vol_class String? @db.Text
+  jbdf_fi_facet              String? @db.Text
+
+  @@unique([law_cd, app_num], map: "upd_pmjb_g_jpo_case_biblog_main_ids")
+  @@index([app_num], map: "idx_upd_pmjb_g_jpo_case_biblog_app_num")
+}
+
+model upd_pmjb_gr_jpo_case_biblog {
+  id                         String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  law_cd                     Int
+  app_num                    String  @db.Text
+  article_id                 String  @db.Text
+  repeat_num                 Int
+  jbui_amend_mk              String? @db.Text
+  jbui_ver_num               String? @db.Text
+  jbui_seq_num               String? @db.Text
+  jbui_pub_ipc               String? @db.Text
+  jbri_amend_mk              String? @db.Text
+  jbri_ver_num               String? @db.Text
+  jbri_seq_num               String? @db.Text
+  jbri_reg_ipc               String? @db.Text
+  jbuf_fi_class_typ          String? @db.Text
+  jbuf_fi_left_sign          String? @db.Text
+  jbuf_fi_section            String? @db.Text
+  jbuf_fi_class              String? @db.Text
+  jbuf_fi_subclass           String? @db.Text
+  jbuf_fi_main_grp           String? @db.Text
+  jbuf_fi_separator          String? @db.Text
+  jbuf_fi_sub_grp            String? @db.Text
+  jbuf_fi_subdiv_sign        String? @db.Text
+  jbuf_fi_separate_vol_class String? @db.Text
+  jbuf_fi_facet              String? @db.Text
+  jbuf_fi_right_sign         String? @db.Text
+  jbuf_fi_jpo_refer_num      String? @db.Text
+  jbuf_fi_amend_mk           String? @db.Text
+  jbuf_fi_prlmnry            String? @db.Text
+  jbrf_fi_class_typ          String? @db.Text
+  jbrf_fi_left_sign          String? @db.Text
+  jbrf_fi_section            String? @db.Text
+  jbrf_fi_class              String? @db.Text
+  jbrf_fi_subclass           String? @db.Text
+  jbrf_fi_main_grp           String? @db.Text
+  jbrf_fi_separator          String? @db.Text
+  jbrf_fi_sub_grp            String? @db.Text
+  jbrf_fi_subdiv_sign        String? @db.Text
+  jbrf_fi_separate_vol_class String? @db.Text
+  jbrf_fi_facet              String? @db.Text
+  jbrf_fi_right_sign         String? @db.Text
+  jbrf_fi_jpo_refer_num      String? @db.Text
+  jbrf_fi_amend_mk           String? @db.Text
+  jbrf_fi_prlmnry            String? @db.Text
+
+  @@unique([law_cd, app_num, article_id, repeat_num], map: "upd_pmjb_gr_jpo_case_biblog_main_ids")
+  @@index([app_num], map: "idx_upd_pmjb_gr_jpo_case_biblog_app_num")
+  @@index([article_id], map: "idx_upd_pmjb_gr_jpo_case_biblog_article_id")
+}
+
+model upd_pmoa_g_old_app_case {
+  id                String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  law_cd            Int
+  app_num           String  @db.Text
+  oa_delete_flg     String? @db.Text
+  oa_update_dttm    String? @db.Text
+  oaep_delete_flg   String? @db.Text
+  oaep_exam_pub_num String? @db.Text
+  oaep_exam_pub_dt  String? @db.Text
+
+  @@unique([law_cd, app_num], map: "upd_pmoa_g_old_app_case_main_ids")
+  @@index([app_num], map: "idx_upd_pmoa_g_old_app_case_app_num")
+}
+
+model upd_pmob_g_old_case_biblog {
+  id                            String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  law_cd                        Int
+  app_num                       String  @db.Text
+  ob_delete_flg                 String? @db.Text
+  ob_update_dttm                String? @db.Text
+  obpr_delete_flg               String? @db.Text
+  obpr_pllt_ctrl_relate_tech_mk String? @db.Text
+  obao_delete_flg               String? @db.Text
+  obao_num_typ_cd               String? @db.Text
+  obao_parent_app_num           String? @db.Text
+  obao_reg_num                  String? @db.Text
+  obpt_delete_flg               String? @db.Text
+  obpt_past_law_cd              String? @db.Text
+  obpt_past_app_num             String? @db.Text
+  obei_delete_flg               String? @db.Text
+  obpd_delete_flg               String? @db.Text
+  obnp_delete_flg               String? @db.Text
+
+  @@unique([law_cd, app_num], map: "upd_pmob_g_old_case_biblog_main_ids")
+  @@index([app_num], map: "idx_upd_pmob_g_old_case_biblog_app_num")
+}
+
+model upd_pmos_g_old_case_stat {
+  id                 String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  law_cd             Int
+  app_num            String  @db.Text
+  os_delete_flg      String? @db.Text
+  osos_delete_flg    String? @db.Text
+  osos_opp_cnt       String? @db.Text
+  osos_opp_valid_cnt String? @db.Text
+
+  @@unique([law_cd, app_num], map: "upd_pmos_g_old_case_stat_main_ids")
+  @@index([app_num], map: "idx_upd_pmos_g_old_case_stat_app_num")
+}
+
+model upd_umab_g_appl_case_biblog {
+  id                      String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  law_cd                  Int
+  app_num                 String  @db.Text
+  ab_delete_flg           String? @db.Text
+  ab_update_dttm          String? @db.Text
+  abcn_delete_flg         String? @db.Text
+  abcn_app_claim_cnt      String? @db.Text
+  abcn_exam_pub_claim_cnt String? @db.Text
+  abcn_reg_claim_cnt      String? @db.Text
+  abrt_delete_flg         String? @db.Text
+  abrt_right_trf          String? @db.Text
+  abrt_license_permission String? @db.Text
+  abpp_delete_flg         String? @db.Text
+  abip_delete_flg         String? @db.Text
+  abna_delete_flg         String? @db.Text
+  abpa_delete_flg         String? @db.Text
+  abpa_parent_app_typ     String? @db.Text
+  abpa_parent_app_law_cd  String? @db.Text
+  abpa_parent_app_num     String? @db.Text
+  abpa_retroacted_dt      String? @db.Text
+  abdn_delete_flg         String? @db.Text
+  abdn_device_title       String?
+  abaa_delete_flg         String? @db.Text
+  abde_delete_flg         String? @db.Text
+  abti_delete_flg         String? @db.Text
+  abds_delete_flg         String? @db.Text
+  abli_delete_flg         String? @db.Text
+  abdp_delete_flg         String? @db.Text
+  abnl_delete_flg         String? @db.Text
+  abnl_novelty_lack_class String? @db.Text
+  abae_delete_flg         String? @db.Text
+  abct_delete_flg         String? @db.Text
+  aban_delete_flg         String? @db.Text
+
+  @@unique([law_cd, app_num], map: "upd_umab_g_appl_case_biblog_main_ids")
+  @@index([app_num], map: "idx_upd_umab_g_appl_case_biblog_app_num")
+}
+
+model upd_umab_gr_appl_case_biblog {
+  id                        String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  law_cd                    Int
+  app_num                   String  @db.Text
+  article_id                String  @db.Text
+  repeat_num                Int
+  abpp_pri_app_num          String? @db.Text
+  abpp_pri_claim_dt         String? @db.Text
+  abpp_pri_cntry_cd         String? @db.Text
+  abip_intnl_pri_law_cd     String? @db.Text
+  abip_intnl_pri_app_num    String? @db.Text
+  abip_intl_app_num         String? @db.Text
+  abip_claim_dt             String? @db.Text
+  abna_newapp_app_typ       String? @db.Text
+  abna_newapp_law_cd        String? @db.Text
+  abna_newapp_app_num       String? @db.Text
+  abna_newapp_app_dt        String? @db.Text
+  abaa_appl_atty_class      String? @db.Text
+  abaa_appl_atty_id         String? @db.Text
+  abaa_change_num           String? @db.Text
+  abaa_req_typ              String? @db.Text
+  abaa_nationality_cd       String? @db.Text
+  abaa_pref_cd              String? @db.Text
+  abaa_rep_appl_id          String? @db.Text
+  abaa_above_appl_cnt       String? @db.Text
+  abaa_atty_other_cnt       String? @db.Text
+  abaa_atty_typ_cd          String? @db.Text
+  abaa_atty_qualify_cd      String? @db.Text
+  abaa_crrspnd_num          String? @db.Text
+  abde_device_creator_name  String?
+  abde_device_creator_addr  String?
+  abti_trust_typ            String? @db.Text
+  abti_nationality_cd       String? @db.Text
+  abti_name                 String?
+  abti_addr                 String?
+  abds_design_state_cd      String? @db.Text
+  abds_regional_patent_mk   String? @db.Text
+  abli_later_pri_law_cd     String? @db.Text
+  abli_later_pri_app_num    String? @db.Text
+  abli_later_pri_app_dt     String? @db.Text
+  abdp_mcrb_dpst_instt_id   String? @db.Text
+  abdp_mcrb_dpst_num        String? @db.Text
+  abnl_novelty_lack_art_cd  String? @db.Text
+  abnl_novelty_lack_content String?
+  abae_crrspnd_num          String? @db.Text
+  abae_appl_atty_addr       String?
+  abae_appl_atty_name       String?
+  abae_representative_name  String?
+  abae_office_addr          String?
+  abae_wrk_place_addr       String?
+  abct_clmt_atty_id         String? @db.Text
+  abct_req_typ              String? @db.Text
+  abct_pref_cd              String? @db.Text
+  abct_rep_clmt_id          String? @db.Text
+  abct_atty_typ_cd          String? @db.Text
+  abct_crrspnd_num          String? @db.Text
+  aban_crrspnd_num          String? @db.Text
+  aban_clmt_atty_addr       String?
+  aban_clmt_atty_name       String?
+  aban_representative_name  String?
+  aban_office_addr          String?
+  aban_wrk_place_addr       String?
+
+  @@unique([law_cd, app_num, article_id, repeat_num], map: "upd_umab_gr_appl_case_biblog_main_ids")
+  @@index([app_num], map: "idx_upd_umab_gr_appl_case_biblog_app_num")
+  @@index([article_id], map: "idx_upd_umab_gr_appl_case_biblog_article_id")
+}
+
+model upd_umac_g_app_case {
+  id                      String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  law_cd                  Int
+  app_num                 String  @db.Text
+  ac_delete_flg           String? @db.Text
+  ac_update_dttm          String? @db.Text
+  acai_delete_flg         String? @db.Text
+  acai_app_dt             String? @db.Text
+  acai_app_typ_1          String? @db.Text
+  acai_app_typ_2          String? @db.Text
+  acai_app_typ_3          String? @db.Text
+  acai_app_typ_4          String? @db.Text
+  acai_app_typ_5          String? @db.Text
+  acai_refer_num          String? @db.Text
+  acai_org_lang_app_flg   String? @db.Text
+  acup_delete_flg         String? @db.Text
+  acup_pub_num            String? @db.Text
+  acup_pub_dt             String? @db.Text
+  actp_delete_flg         String? @db.Text
+  actp_trnsl_pub_num      String? @db.Text
+  actp_trnsl_pub_dt       String? @db.Text
+  actp_trnsl_repub_dt     String? @db.Text
+  acap_delete_flg         String? @db.Text
+  acld_delete_flg         String? @db.Text
+  acld_final_dspst_typ    String? @db.Text
+  acld_final_dspst_dt     String? @db.Text
+  acrg_delete_flg         String? @db.Text
+  acrg_reg_num            String? @db.Text
+  acrg_reg_dt             String? @db.Text
+  acrb_delete_flg         String? @db.Text
+  acrb_reg_bul_publish_dt String? @db.Text
+  acia_delete_flg         String? @db.Text
+  acia_intl_app_num       String? @db.Text
+  acia_intl_pub_num       String? @db.Text
+  acia_intl_pub_dt        String? @db.Text
+  acia_trnsl_submit_dt    String? @db.Text
+  acia_lang_flg           String? @db.Text
+
+  @@unique([law_cd, app_num], map: "upd_umac_g_app_case_main_ids")
+  @@index([app_num], map: "idx_upd_umac_g_app_case_app_num")
+}
+
+model upd_umap_g_app_doc {
+  id                         String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  law_cd                     Int
+  app_num                    String  @db.Text
+  storing_seq_num            Int
+  article_id                 String  @db.Text
+  ap_delete_flg              String? @db.Text
+  ap_update_dttm             String? @db.Text
+  apad_delete_flg            String? @db.Text
+  apad_update_dttm           String? @db.Text
+  apad_create_dt             String? @db.Text
+  apad_valid_flg             String? @db.Text
+  apad_intrmd_doc_cd         String? @db.Text
+  apad_crrspnd_mk            String? @db.Text
+  apad_submit_dt             String? @db.Text
+  apad_rcpt_dt               String? @db.Text
+  apad_inspect_prhbt_flg     String? @db.Text
+  apad_cllctd_amount         String? @db.Text
+  apad_opp_num               String? @db.Text
+  apad_rcpt_num              String? @db.Text
+  apad_frml_chked_mk         String? @db.Text
+  apad_instructed_flg        String? @db.Text
+  apad_dspst_dt              String? @db.Text
+  apad_change_appl_atty_id   String? @db.Text
+  apad_pri_submit_cntry_cd   String? @db.Text
+  apad_ver_num               String? @db.Text
+  apad_descript_ver_num      String? @db.Text
+  apad_invalid_doc_flg       String? @db.Text
+  apad_doc_frmt_typ          String? @db.Text
+  apad_crrspnd_doc_num       String? @db.Text
+  apad_doc_typ_cd            String? @db.Text
+  apad_amend_doc_rcpt_num    String? @db.Text
+  apad_store_num             String? @db.Text
+  apad_dna_flg               String? @db.Text
+  apad_description_page      String? @db.Text
+  apad_descript_flg          String? @db.Text
+  apad_drawing_page          String? @db.Text
+  apad_drawing_flg           String? @db.Text
+  apad_abstrct_doc_page      String? @db.Text
+  apad_abstrct_flg           String? @db.Text
+  apad_attchd_doc_page       String? @db.Text
+  apad_doc_size              String? @db.Text
+  apdd_delete_flg            String? @db.Text
+  apdd_create_dt             String? @db.Text
+  apdd_valid_flg             String? @db.Text
+  apdd_intrmd_doc_cd         String? @db.Text
+  apdd_crrspnd_mk            String? @db.Text
+  apdd_draft_dt              String? @db.Text
+  apdd_dsptch_dt             String? @db.Text
+  apdd_inspect_prhbt_flg     String? @db.Text
+  apdd_cllctd_amount         String? @db.Text
+  apdd_opp_num               String? @db.Text
+  apdd_dsptch_doc_num        String? @db.Text
+  apdd_rjct_reason_art_cd    String? @db.Text
+  apdd_ver_num               String? @db.Text
+  apdd_invalid_doc_flg       String? @db.Text
+  apdd_doc_frmt_typ          String? @db.Text
+  apdd_crrspnd_doc_num       String? @db.Text
+  apdd_doc_typ_cd            String? @db.Text
+  apdd_dsptch_doc_image_page String? @db.Text
+  apdd_doc_size              String? @db.Text
+  apjd_delete_flg            String? @db.Text
+  apjd_create_dt             String? @db.Text
+  apjd_valid_flg             String? @db.Text
+  apjd_intrmd_doc_cd         String? @db.Text
+  apjd_crrspnd_mk            String? @db.Text
+  apjd_jpo_doc_create_dt     String? @db.Text
+  apjd_inspect_prhbt_flg     String? @db.Text
+  apjd_admnst_appeal_num     String? @db.Text
+  apjd_litigate_num          String? @db.Text
+  apjd_jpo_doc_num           String? @db.Text
+  apjd_goodmoral_violate_cd  String? @db.Text
+  apjd_ver_num               String? @db.Text
+  apjd_invalid_doc_flg       String? @db.Text
+  apjd_doc_frmt_typ          String? @db.Text
+  apjd_crrspnd_doc_num       String? @db.Text
+  apjd_doc_typ_cd            String? @db.Text
+  apjd_jpo_doc_image_page    String? @db.Text
+  apjd_doc_size              String? @db.Text
+
+  @@unique([law_cd, app_num, storing_seq_num, article_id], map: "upd_umap_g_app_doc_main_ids")
+  @@index([app_num], map: "idx_upd_umap_g_app_doc_app_num")
+  @@index([storing_seq_num], map: "idx_upd_umap_g_app_doc_storing_seq_num")
+}
+
+model upd_umcs_g_case_stat {
+  id                         String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  law_cd                     Int
+  app_num                    String  @db.Text
+  cs_delete_flg              String? @db.Text
+  cs_update_dttm             String? @db.Text
+  cscs_delete_flg            String? @db.Text
+  cscs_exam_claim_list_mk    String? @db.Text
+  cscs_final_dspst_dt        String? @db.Text
+  cscs_acclrtd_exam_mk       String? @db.Text
+  cscs_pub_prep_flg          String? @db.Text
+  cscs_applicable_law_class  String? @db.Text
+  cscs_exam_typ              String? @db.Text
+  cscs_litigate_cd           String? @db.Text
+  cscs_final_decision_typ_cd String? @db.Text
+  cscs_exam_claim_cnt        String? @db.Text
+  cscs_newapp_flg            String? @db.Text
+  cscs_later_intnl_pri_flg   String? @db.Text
+  cscs_citd_others_mk        String? @db.Text
+
+  @@unique([law_cd, app_num], map: "upd_umcs_g_case_stat_main_ids")
+  @@index([app_num], map: "idx_upd_umcs_g_case_stat_app_num")
+}
+
+model upd_umjb_g_jpo_case_biblog {
+  id                         String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  law_cd                     Int
+  app_num                    String  @db.Text
+  jb_delete_flg              String? @db.Text
+  jb_update_dttm             String? @db.Text
+  jbui_delete_flg            String? @db.Text
+  jbri_delete_flg            String? @db.Text
+  jbdc_delete_flg            String? @db.Text
+  jbdc_desig_class_ipc       String? @db.Text
+  jboi_delete_flg            String? @db.Text
+  jboi_staff_id              String? @db.Text
+  jboi_div_cd                String? @db.Text
+  jbpo_delete_flg            String? @db.Text
+  jbpo_goodmoral_mk          String? @db.Text
+  jbuf_delete_flg            String? @db.Text
+  jbrf_delete_flg            String? @db.Text
+  jbdf_delete_flg            String? @db.Text
+  jbdf_fi_section            String? @db.Text
+  jbdf_fi_class              String? @db.Text
+  jbdf_fi_subclass           String? @db.Text
+  jbdf_fi_main_grp           String? @db.Text
+  jbdf_fi_separator          String? @db.Text
+  jbdf_fi_sub_grp            String? @db.Text
+  jbdf_fi_subdiv_sign        String? @db.Text
+  jbdf_fi_separate_vol_class String? @db.Text
+  jbdf_fi_facet              String? @db.Text
+
+  @@unique([law_cd, app_num], map: "upd_umjb_g_jpo_case_biblog_main_ids")
+  @@index([app_num], map: "idx_upd_umjb_g_jpo_case_biblog_app_num")
+}
+
+model upd_umjb_gr_jpo_case_biblog {
+  id                         String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  law_cd                     Int
+  app_num                    String  @db.Text
+  article_id                 String  @db.Text
+  repeat_num                 Int
+  jbui_amend_mk              String? @db.Text
+  jbui_ver_num               String? @db.Text
+  jbui_seq_num               String? @db.Text
+  jbui_pub_ipc               String? @db.Text
+  jbri_amend_mk              String? @db.Text
+  jbri_ver_num               String? @db.Text
+  jbri_seq_num               String? @db.Text
+  jbri_reg_ipc               String? @db.Text
+  jbuf_fi_class_typ          String? @db.Text
+  jbuf_fi_left_sign          String? @db.Text
+  jbuf_fi_section            String? @db.Text
+  jbuf_fi_class              String? @db.Text
+  jbuf_fi_subclass           String? @db.Text
+  jbuf_fi_main_grp           String? @db.Text
+  jbuf_fi_separator          String? @db.Text
+  jbuf_fi_sub_grp            String? @db.Text
+  jbuf_fi_subdiv_sign        String? @db.Text
+  jbuf_fi_separate_vol_class String? @db.Text
+  jbuf_fi_facet              String? @db.Text
+  jbuf_fi_right_sign         String? @db.Text
+  jbuf_fi_jpo_refer_num      String? @db.Text
+  jbuf_fi_amend_mk           String? @db.Text
+  jbuf_fi_prlmnry            String? @db.Text
+  jbrf_fi_class_typ          String? @db.Text
+  jbrf_fi_left_sign          String? @db.Text
+  jbrf_fi_section            String? @db.Text
+  jbrf_fi_class              String? @db.Text
+  jbrf_fi_subclass           String? @db.Text
+  jbrf_fi_main_grp           String? @db.Text
+  jbrf_fi_separator          String? @db.Text
+  jbrf_fi_sub_grp            String? @db.Text
+  jbrf_fi_subdiv_sign        String? @db.Text
+  jbrf_fi_separate_vol_class String? @db.Text
+  jbrf_fi_facet              String? @db.Text
+  jbrf_fi_right_sign         String? @db.Text
+  jbrf_fi_jpo_refer_num      String? @db.Text
+  jbrf_fi_amend_mk           String? @db.Text
+  jbrf_fi_prlmnry            String? @db.Text
+
+  @@unique([law_cd, app_num, article_id, repeat_num], map: "upd_umjb_gr_jpo_case_biblog_main_ids")
+  @@index([app_num], map: "idx_upd_umjb_gr_jpo_case_biblog_app_num")
+  @@index([article_id], map: "idx_upd_umjb_gr_jpo_case_biblog_article_id")
+}
+
