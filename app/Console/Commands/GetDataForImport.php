@@ -5,15 +5,16 @@ namespace App\Console\Commands;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
+use App\Models\CrawlerHistory;
 
-class DownloadJPlatPatData extends Command
+class GetDataForImport extends Command
 {
     /**
      * The name and signature of the console command.
      *
      * @var string
      */
-    protected $signature = 'jplatpat:download';
+    protected $signature = 'get:data:to:import';
 
     /**
      * The console command description.
@@ -27,12 +28,17 @@ class DownloadJPlatPatData extends Command
     protected string $username = 'PWS72549';
     protected string $password = 'UbNK4BeGVJ';
 
+    const DATA_GROUP_NAMES = [
+        '[Daily_Update] 出願マスタ（特実）(Daily_Update_Data_Appm_PatentUtility)',
+        '[Daily_Update] 登録マスタ（特実）(Daily_Update_Data_Registrm_PatentUtility)',
+    ];
+
     /**
      * Execute the console command.
      */
     public function handle()
     {
-        $this->info('Starting J-PlatPat login and API fetch...');
+        $this->info('Started at to get data for download: ' . now()->format('Y-m-d H:i:s'));
 
         try {
             // Step 1: Call login API
@@ -43,7 +49,7 @@ class DownloadJPlatPatData extends Command
             $cookies = $loginResult['cookies'];
 
             // Step 2: Call API with JWT token and cookies
-            $this->info('Step 2: Calling API...');
+            $this->info('Step 2: Calling get file list API...');
 
             // Build cookie string
             $cookieString = collect($cookies)
@@ -77,9 +83,8 @@ class DownloadJPlatPatData extends Command
             $response = Http::withHeaders($headers)
                 ->post($this->apiUrl, []); // Empty body
 
-            $this->line('Response status: ' . $response->status());
-
             if ($response->successful()) {
+                $this->info('✓ Get list data for download successful!');
                 $data = $response->json();
                 $bulkDataList = $data['BULK_DATA_LIST'];
 
@@ -100,31 +105,16 @@ class DownloadJPlatPatData extends Command
                         ]
                      */
 
-                     if ($bulkDataItem['DATA_NAME'] === '[Daily_Update] 出願マスタ（特実）(Daily_Update_Data_Appm_PatentUtility)') {
-                        dd($bulkDataItem['BULK_DATA']);
-                     }
-
-                    if ($bulkDataItem['DATA_NAME'] === '[Daily_Update] 登録マスタ（特実）(Daily_Update_Data_Registrm_PatentUtility)') {
-                        foreach ($bulkDataItem['BULK_DATA'] as $bulkData) {
-                            if (count($bulkData['BULK_DL_DATA_INFO']) > 1) {
-                                dd('Count for', $bulkData);
-                            }
-
-                            if (!empty($bulkData['BULK_DL_DATA_INFO'])) {
-                                $listFilesInfo = $bulkData['BULK_DL_DATA_INFO'];
-
-                                foreach ($listFilesInfo as $fileInfo) {
-                                    if (isset($fileInfo['BULKDATA_URL'])) {
-                                        $this->info("Step 3: Downloading file: {$fileInfo['FILE_NAME']}...");
-                                        $this->downloadFile($fileInfo['BULKDATA_URL'], $fileInfo['FILE_NAME'], $jwtToken, $cookies);
-                                    }
-
-                                    dd($bulkData);
-                                }
+                     foreach (self::DATA_GROUP_NAMES as $dataGroupName) {
+                        if ($bulkDataItem['DATA_NAME'] === $dataGroupName) {
+                            foreach ($bulkDataItem['BULK_DATA'] as $key => $bulkData) {
+                                $this->insertDataForCrawler($bulkData, $dataGroupName);
                             }
                         }
                     }
                 }
+
+                $this->info('Finished at: ' . now()->format('Y-m-d H:i:s'));
 
                 return Command::SUCCESS;
             } else {
@@ -138,58 +128,33 @@ class DownloadJPlatPatData extends Command
         }
     }
 
-    /**
-     * Download file from URL and save to storage/app/private.
-     *
-     * @param string $url
-     * @param string $fileName
-     * @param string $jwtToken
-     * @param array<string, string> $cookies
-     * @return void
-     * @throws \Exception
-     */
-    protected function downloadFile(string $url, string $fileName, string $jwtToken, array $cookies): void
+    private function insertDataForCrawler(array $bulkData, string $dataGroupName)
     {
-        // Build cookie string
-        $cookieString = collect($cookies)
-            ->map(fn($value, $key) => "{$key}={$value}")
-            ->implode('; ');
+        // foreach
+        $bulkDlDataInfo = $bulkData['BULK_DL_DATA_INFO'] ?? [];
 
-        // Build headers for file download
-        $headers = [
-            'Accept' => '*/*',
-            'Accept-Language' => 'en-US,en;q=0.9',
-            'Connection' => 'keep-alive',
-            'Origin' => 'https://www.j-platpat.inpit.go.jp',
-            'Referer' => 'https://www.j-platpat.inpit.go.jp/c1100',
-            'User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36',
-            'sec-ch-ua' => '"Chromium";v="142", "Google Chrome";v="142", "Not_A Brand";v="99"',
-            'sec-ch-ua-mobile' => '?0',
-            'sec-ch-ua-platform' => '"macOS"',
-            'Sec-Fetch-Dest' => 'empty',
-            'Sec-Fetch-Mode' => 'cors',
-            'Sec-Fetch-Site' => 'same-origin',
-            'JWT' => $jwtToken,
-        ];
+        if (!empty($bulkDlDataInfo)) {
+            foreach ($bulkDlDataInfo as $fileInfo) {
+                if (CrawlerHistory::where([
+                    'release_date' => $bulkData['RELEASE_DATE'],
+                    'file_name' => $fileInfo['FILE_NAME']
+                ])->exists()) {
+                    continue;
+                }
 
-        // Add cookies to headers if available
-        if (!empty($cookieString)) {
-            $headers['Cookie'] = $cookieString;
+                CrawlerHistory::create([
+                    'release_date'      => $bulkData['RELEASE_DATE'] ?? null,
+                    'data_bunrui_name'  => $bulkData['DATA_BUNRUI_NAME'] ?? null,
+                    'accumulation_time' => $bulkData['ACCUMULATION_TIME'] ?? null,
+                    'checksum_value'    => $bulkData['CHECKSUM_VALUE'] ?? null,
+                    'file_name'         => $fileInfo['FILE_NAME'] ?? null,
+                    'file_size'         => $fileInfo['FILE_SIZE'] ?? null,
+                    'download'          => $fileInfo['DOWNLOAD'] ?? 0,
+                    'bulkdata_url'      => $fileInfo['BULKDATA_URL'] ?? null,
+                    'data_group_name'   => $dataGroupName,
+                ]);
+            }
         }
-
-        // Download file
-        $response = Http::withHeaders($headers)
-            ->get($url);
-
-        if (!$response->successful()) {
-            throw new \Exception("Failed to download file: {$fileName} - Status: {$response->status()}");
-        }
-
-        // Save file to storage/app/private
-        Storage::disk('local')->put($fileName, $response->body());
-
-        $fileSize = Storage::disk('local')->size($fileName);
-        $this->info("✓ File downloaded successfully: {$fileName} ({$fileSize} bytes)");
     }
 
     /**
