@@ -19,6 +19,14 @@ class ImportJpdrpData extends Command
     public function handle()
     {
         try {
+            // Check if there's any record currently being processed
+            $processingRecord = CrawlerHistory::where('status', CrawlerHistory::STATUS_PROCESSING)->first();
+
+            if ($processingRecord) {
+                $this->info('Another import process is already running. Skipping this execution.');
+                return Command::SUCCESS;
+            }
+
             $history = CrawlerHistory::where('status', CrawlerHistory::STATUS_NEW)
                 ->orderBy('release_date')
                 ->first();
