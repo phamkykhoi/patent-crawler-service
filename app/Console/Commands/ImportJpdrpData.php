@@ -374,78 +374,97 @@ class ImportJpdrpData extends Command
                 return null;
             }
 
-            $this->info("Downloading file from: {$history->bulkdata_url}");
-
-            // Use existing temte_files directory
-            $tempFilesDir = storage_path('app/temte_files');
-
-            // Get file extension from URL or filename
             $url = $history->bulkdata_url;
-            $pathInfo = pathinfo(parse_url($url, PHP_URL_PATH));
-            $extension = $pathInfo['extension'] ?? 'tar.gz';
+            $this->info("Downloading file from: {$url}");
 
-            // Generate unique filename based on history
-            $downloadedFileName = 'download_' . $history->id . '.' . $extension;
-            $downloadedFilePath = $tempFilesDir . '/' . $downloadedFileName;
+            // Extract filename from URL (e.g., JPDAP_20241109.tar.gz)
+            $urlParts = parse_url($url);
+            $pathParts = explode('/', $urlParts['path']);
+            $filename = end($pathParts);
 
-            // Download file with timeout and retry logic
-            $this->info("Downloading to: {$downloadedFilePath}");
-
-            $response = Http::timeout(300) // 5 minutes timeout
-                ->retry(3, 1000) // Retry 3 times with 1 second delay
-                ->get($url);
-
-            if (!$response->successful()) {
-                $this->error("Failed to download file. HTTP Status: {$response->status()}");
+            if (empty($filename)) {
+                $this->error("Could not extract filename from URL");
                 return null;
             }
 
-            // Save downloaded file
-            File::put($downloadedFilePath, $response->body());
-            $this->info("Downloaded file size: " . File::size($downloadedFilePath) . " bytes");
+            $this->info("Filename: {$filename}");
 
-            // Create extraction directory within temte_files
-            $extractedDirName = 'extracted_' . $history->id;
-            $extractedDirPath = $tempFilesDir . '/' . $extractedDirName;
-
-            if (File::isDirectory($extractedDirPath)) {
-                File::deleteDirectory($extractedDirPath);
+            // Set download directory
+            $downloadDir = storage_path('app/temte_files');
+            if (!File::isDirectory($downloadDir)) {
+                File::makeDirectory($downloadDir, 0755, true);
             }
-            File::makeDirectory($extractedDirPath, 0755, true);
 
-            // Extract file based on extension
-            $this->info("Extracting file to: {$extractedDirPath}");
+            // Full path to downloaded file
+            $filePath = $downloadDir . '/' . $filename;
 
-            if (str_contains($extension, 'tar.gz') || str_contains($extension, 'tgz')) {
-                $success = $this->extractTarGz($downloadedFilePath, $extractedDirPath);
-            } elseif (str_contains($extension, 'tar')) {
-                $success = $this->extractTar($downloadedFilePath, $extractedDirPath);
-            } elseif (str_contains($extension, 'zip')) {
-                $success = $this->extractZip($downloadedFilePath, $extractedDirPath);
+            // Download the file
+            $this->info("Downloading to: {$filePath}");
+            $response = Http::timeout(300)->withOptions([
+                'sink' => $filePath,
+            ])->get($url);
+
+            if (!$response->successful()) {
+                $this->error("Failed to download file. HTTP Status: " . $response->status());
+                return null;
+            }
+
+            $this->info("File downloaded successfully");
+
+            // Extract the file
+            $extractDir = $downloadDir . '/' . pathinfo($filename, PATHINFO_FILENAME);
+
+            // Remove existing extraction directory if it exists
+            if (File::isDirectory($extractDir)) {
+                File::deleteDirectory($extractDir);
+            }
+            File::makeDirectory($extractDir, 0755, true);
+
+            $this->info("Extracting to: {$extractDir}");
+
+            // Determine file type and extract accordingly
+            $extension = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
+            $extracted = false;
+
+            if ($extension === 'gz') {
+                // Check if it's tar.gz
+                $basenameWithoutGz = pathinfo($filename, PATHINFO_FILENAME);
+                if (str_ends_with(strtolower($basenameWithoutGz), '.tar')) {
+                    $extracted = $this->extractTarGz($filePath, $extractDir);
+                } else {
+                    $this->error("Unsupported .gz file format");
+                    return null;
+                }
+            } elseif ($extension === 'tar') {
+                $extracted = $this->extractTar($filePath, $extractDir);
+            } elseif ($extension === 'zip') {
+                $extracted = $this->extractZip($filePath, $extractDir);
             } else {
-                $this->warn("Unknown file extension: {$extension}. Trying tar.gz extraction...");
-                $success = $this->extractTarGz($downloadedFilePath, $extractedDirPath);
+                $this->error("Unsupported file format: {$extension}");
+                return null;
             }
 
-            if (!$success) {
+            if (!$extracted) {
                 $this->error("Failed to extract file");
                 return null;
             }
 
-            // Clean up downloaded file
-            File::delete($downloadedFilePath);
-            $this->info("Cleaned up downloaded file");
+            // Find the folder containing TSV files
+            $tsvFolder = $this->findJpdrpFolder($extractDir);
 
-            // Look for JPDRP folder or similar structure in extracted content
-            $jpdrpFolder = $this->findJpdrpFolder($extractedDirPath);
-
-            if (!$jpdrpFolder) {
-                $this->warn("No JPDRP folder found, using extracted directory directly");
-                $jpdrpFolder = $extractedDirPath;
+            if (!$tsvFolder) {
+                // If no specific folder found, check if TSV files are directly in extractDir
+                $tsvFiles = File::glob($extractDir . '/*.tsv');
+                if (!empty($tsvFiles)) {
+                    $this->info("TSV files found directly in extraction directory");
+                    return $extractDir;
+                }
+                $this->error("No TSV files found in extracted content");
+                return null;
             }
 
-            $this->info("Using data folder: {$jpdrpFolder}");
-            return $jpdrpFolder;
+            $this->info("TSV folder found: {$tsvFolder}");
+            return $tsvFolder;
 
         } catch (\Exception $e) {
             $this->error("Error downloading/extracting file: " . $e->getMessage());
