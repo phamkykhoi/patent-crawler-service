@@ -35,8 +35,16 @@ class ImportJpdrpData extends Command
             $this->info("Processing record ID: {$history->id}, File: {$history->file_name}");
             $history->update(['status' => CrawlerHistory::STATUS_PROCESSING]);
 
-            // Get all TSV files in the JPDAP folder
-            $jpdapFolder = storage_path('app/temte_files/JPDAP');
+            // Download and extract the TSV file based on history record
+            $jpdapFolder = $this->downloadAndExtractFile($history);
+
+            if (!$jpdapFolder) {
+                $this->error("Failed to download and extract file from: {$history->bulkdata_url}");
+                $history->update(['status' => CrawlerHistory::STATUS_ERROR]);
+                return Command::FAILURE;
+            }
+
+            // Get all TSV files in the extracted folder
             $tsvFiles = $this->getTsvFiles($jpdapFolder);
 
             if (empty($tsvFiles)) {
@@ -153,19 +161,6 @@ class ImportJpdrpData extends Command
     }
 
     /**
-     * Get table name based on history record
-     *
-     * @param CrawlerHistory $history
-     * @return string
-     */
-    private function getTableName($history)
-    {
-        // For now, use the hardcoded table name, but this can be made dynamic
-        // based on the history file_name or other properties
-        return 'upd_cmbi_g_bul_info';
-    }
-
-    /**
      * Get all TSV files from a directory
      *
      * @param string $directory
@@ -274,6 +269,27 @@ class ImportJpdrpData extends Command
             $tempRowCount = DB::table($tempTableName)->count();
             $this->info("  Imported {$tempRowCount} rows to temporary table");
 
+            // Remove duplicates within the temp table based on unique constraints
+            $conflictColumns = implode(', ', array_map(function($col) {
+                return '"' . $col . '"';
+            }, $uniqueColumns));
+
+            $deduplicateSql = sprintf(
+                "DELETE FROM %s WHERE ctid NOT IN (
+                    SELECT MIN(ctid) FROM %s GROUP BY %s
+                )",
+                $tempTableName,
+                $tempTableName,
+                $conflictColumns
+            );
+
+            DB::statement($deduplicateSql);
+            $dedupRowCount = DB::table($tempTableName)->count();
+
+            if ($dedupRowCount < $tempRowCount) {
+                $this->info("  Removed " . ($tempRowCount - $dedupRowCount) . " duplicate rows from temp table");
+            }
+
             // Prepare columns for UPSERT (exclude id, timestamps, and unique constraint columns)
             $excludeFromUpdate = array_merge(
                 ['id', 'created_at', 'updated_at'],
@@ -339,5 +355,202 @@ class ImportJpdrpData extends Command
                 $this->warn("  Could not drop temporary table: " . $e->getMessage());
             }
         }
+    }
+
+    /**
+     * Download and extract file from bulkdata_url
+     *
+     * @param CrawlerHistory $history
+     * @return string|null Path to extracted folder or null on failure
+     */
+    private function downloadAndExtractFile($history)
+    {
+        // Increase memory limit for large file processing
+        ini_set('memory_limit', '1G');
+
+        try {
+            if (!$history->bulkdata_url) {
+                $this->error("No bulkdata_url found in history record");
+                return null;
+            }
+
+            $this->info("Downloading file from: {$history->bulkdata_url}");
+
+            // Use existing temte_files directory
+            $tempFilesDir = storage_path('app/temte_files');
+
+            // Get file extension from URL or filename
+            $url = $history->bulkdata_url;
+            $pathInfo = pathinfo(parse_url($url, PHP_URL_PATH));
+            $extension = $pathInfo['extension'] ?? 'tar.gz';
+
+            // Generate unique filename based on history
+            $downloadedFileName = 'download_' . $history->id . '.' . $extension;
+            $downloadedFilePath = $tempFilesDir . '/' . $downloadedFileName;
+
+            // Download file with timeout and retry logic
+            $this->info("Downloading to: {$downloadedFilePath}");
+
+            $response = Http::timeout(300) // 5 minutes timeout
+                ->retry(3, 1000) // Retry 3 times with 1 second delay
+                ->get($url);
+
+            if (!$response->successful()) {
+                $this->error("Failed to download file. HTTP Status: {$response->status()}");
+                return null;
+            }
+
+            // Save downloaded file
+            File::put($downloadedFilePath, $response->body());
+            $this->info("Downloaded file size: " . File::size($downloadedFilePath) . " bytes");
+
+            // Create extraction directory within temte_files
+            $extractedDirName = 'extracted_' . $history->id;
+            $extractedDirPath = $tempFilesDir . '/' . $extractedDirName;
+
+            if (File::isDirectory($extractedDirPath)) {
+                File::deleteDirectory($extractedDirPath);
+            }
+            File::makeDirectory($extractedDirPath, 0755, true);
+
+            // Extract file based on extension
+            $this->info("Extracting file to: {$extractedDirPath}");
+
+            if (str_contains($extension, 'tar.gz') || str_contains($extension, 'tgz')) {
+                $success = $this->extractTarGz($downloadedFilePath, $extractedDirPath);
+            } elseif (str_contains($extension, 'tar')) {
+                $success = $this->extractTar($downloadedFilePath, $extractedDirPath);
+            } elseif (str_contains($extension, 'zip')) {
+                $success = $this->extractZip($downloadedFilePath, $extractedDirPath);
+            } else {
+                $this->warn("Unknown file extension: {$extension}. Trying tar.gz extraction...");
+                $success = $this->extractTarGz($downloadedFilePath, $extractedDirPath);
+            }
+
+            if (!$success) {
+                $this->error("Failed to extract file");
+                return null;
+            }
+
+            // Clean up downloaded file
+            File::delete($downloadedFilePath);
+            $this->info("Cleaned up downloaded file");
+
+            // Look for JPDRP folder or similar structure in extracted content
+            $jpdrpFolder = $this->findJpdrpFolder($extractedDirPath);
+
+            if (!$jpdrpFolder) {
+                $this->warn("No JPDRP folder found, using extracted directory directly");
+                $jpdrpFolder = $extractedDirPath;
+            }
+
+            $this->info("Using data folder: {$jpdrpFolder}");
+            return $jpdrpFolder;
+
+        } catch (\Exception $e) {
+            $this->error("Error downloading/extracting file: " . $e->getMessage());
+            Log::error("Download/Extract error: " . $e->getMessage());
+            return null;
+        }
+    }
+
+    /**
+     * Extract tar.gz file
+     *
+     * @param string $filePath
+     * @param string $extractTo
+     * @return bool
+     */
+    private function extractTarGz($filePath, $extractTo)
+    {
+        try {
+            $phar = new PharData($filePath);
+            $phar->extractTo($extractTo);
+            $this->info("Successfully extracted tar.gz file");
+            return true;
+        } catch (\Exception $e) {
+            $this->error("Failed to extract tar.gz: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Extract tar file
+     *
+     * @param string $filePath
+     * @param string $extractTo
+     * @return bool
+     */
+    private function extractTar($filePath, $extractTo)
+    {
+        try {
+            $phar = new PharData($filePath);
+            $phar->extractTo($extractTo);
+            $this->info("Successfully extracted tar file");
+            return true;
+        } catch (\Exception $e) {
+            $this->error("Failed to extract tar: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Extract zip file
+     *
+     * @param string $filePath
+     * @param string $extractTo
+     * @return bool
+     */
+    private function extractZip($filePath, $extractTo)
+    {
+        try {
+            $zip = new ZipArchive;
+            $result = $zip->open($filePath);
+
+            if ($result === TRUE) {
+                $zip->extractTo($extractTo);
+                $zip->close();
+                $this->info("Successfully extracted zip file");
+                return true;
+            } else {
+                $this->error("Failed to open zip file. Error code: {$result}");
+                return false;
+            }
+        } catch (\Exception $e) {
+            $this->error("Failed to extract zip: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Find JPDRP folder in extracted content
+     *
+     * @param string $extractedPath
+     * @return string|null
+     */
+    private function findJpdrpFolder($extractedPath)
+    {
+        // Look for JPDRP, JPDAP, or similar folders
+        $possibleFolders = ['JPDRP', 'JPDAP', 'jpdrp', 'jpdap'];
+
+        foreach ($possibleFolders as $folderName) {
+            $folderPath = $extractedPath . '/' . $folderName;
+            if (File::isDirectory($folderPath)) {
+                $this->info("Found data folder: {$folderName}");
+                return $folderPath;
+            }
+        }
+
+        // Look for any subdirectory that contains TSV files
+        $subdirs = File::directories($extractedPath);
+        foreach ($subdirs as $subdir) {
+            $tsvFiles = File::glob($subdir . '/*.tsv');
+            if (!empty($tsvFiles)) {
+                $this->info("Found TSV files in: " . basename($subdir));
+                return $subdir;
+            }
+        }
+
+        return null;
     }
 }
