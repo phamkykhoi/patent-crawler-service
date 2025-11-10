@@ -8,10 +8,10 @@ Database: Postgres
 
 **Step 1:** composer install 
 
-**Step 2:** php artisan migrate
+**Step 2:** `php artisan migrate`
 
-**Step 3:** get:data:to:import
+**Step 3:** `php artisan get:data:to:import`
 
-**Step 4:** while true; do php artisan import:jpdrp:data; sleep 15; done
+**Step 4:** `while true; do php artisan import:jpdrp:data; sleep 15; done`
 
 Note: Chạy test trực tiếp trên termial (dùng như step 4)
